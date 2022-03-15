@@ -3,36 +3,31 @@
 /* ============================================================================================================== */
 /*
  ============================================================================
- Name        : miscutil.c
+ Name        : taas-fargo.cpp
  Author      : Matthias Thimm
- Version     : 2.0
+ Version     : 0.1
  Copyright   : GPL3
- Description : Misc utility structures and functions.
- ============================================================================
- */
+ Description : The taas-fargo solver for abstract argumentation.
 
- /**
- * A simple string value pair.
- */
-struct StringValuePair{
-	char* string;
-	int value;
-};
+============================================================================
+*/
+#include "taas_af.h"
+#include "taas_problem.h"
+#include "taas_solver.h"
+/* ============================================================================================================== */
+int solve(taas::Problem problem, taas::Af af, int argument = -1){
 
-/** Util function for trimming white space */
-char *trimwhitespace(char *str){
-  char *end;
-  // Trim leading space
-  while(isspace(*str)) str++;
-  if(*str == 0)  // All spaces?
-    return str;
-  // Trim trailing space
-  end = str + strlen(str) - 1;
-  while(end > str && isspace(*end)) end--;
-  // Write new null terminator
-  *(end+1) = 0;
-  return str;
+  return 0;
 }
+/* ============================================================================================================== */
+int main(int argc, char *argv[]){
+  taas::Solver solver(
+    "taas-fargo v0.1 (2022-03-13)\nMatthias Thimm (matthias.thimm@fernuni-hagen.de)",
+    {taas::Problem::DC_CO,taas::Problem::DC_PR},
+    solve);
+  return solver.execute(argc,argv);
+}
+
 /* ============================================================================================================== */
 /* == END FILE ================================================================================================== */
 /* ============================================================================================================== */
