@@ -5,7 +5,7 @@
  ============================================================================
  Name        : taas_af.cpp
  Author      : Matthias Thimm
- Version     : 0.1
+ Version     : 1.0
  Copyright   : GPL3
 ============================================================================
 */
@@ -29,29 +29,28 @@ namespace taas{
   /*
    * add some argument
    */
-   void taas::Af::add_argument(string arg_name){
+   void taas::Af::add_argument(const string& arg_name){
      this->number_of_arguments++;
      this->ids2arguments.push_back(arg_name);
      this->arguments2ids[arg_name] = this->number_of_arguments-1;
      this->children.push_back(vector<int>());
      this->parents.push_back(vector<int>());
-     this->initial.push_back(true);
+     this->number_of_attackers.push_back(0);
      this->loops.push_back(false);
    }
 /* ============================================================================================================== */
 /*
  * add some attack
  */
- void taas::Af::add_attack(string arg_name1, string arg_name2){
+ void taas::Af::add_attack(const string& arg_name1, const string& arg_name2){
    this->number_of_attacks++;
    int arg1 = this->arguments2ids[arg_name1];
    int arg2 = this->arguments2ids[arg_name2];
    this->children[arg1].push_back(arg2);
    this->parents[arg2].push_back(arg1);
-   if(this->initial[arg2]){
-     this->initial[arg2] = false;
-     this->number_of_attacked_arguments++;
-   }
+   if(this->number_of_attackers[arg2] == 0)
+    this->number_of_attacked_arguments++;
+   this->number_of_attackers[arg2]++;
    if(arg1 == arg2)
     this->loops[arg1] = true;
  }
@@ -84,8 +83,15 @@ namespace taas{
  /*
   * get argument index
   */
-  int taas::Af::get_argument_index(string arg_name){
+  int taas::Af::get_argument_index(const string& arg_name){
     return this->arguments2ids[arg_name];
+  }
+/* ============================================================================================================== */
+ /*
+  * get argument name
+  */
+  const string& taas::Af::get_argument_name(int argument){
+    return this->ids2arguments[argument];
   }
 /* ============================================================================================================== */
  /*
@@ -99,7 +105,7 @@ namespace taas{
   * is the argument initial?
   */
   bool taas::Af::is_initial(int arg){
-    return this->initial[arg];
+    return this->number_of_attackers[arg] == 0;
   }
 /* ============================================================================================================== */
  /*
@@ -107,6 +113,27 @@ namespace taas{
   */
   bool taas::Af::has_initial_arguments(){
     return (this->number_of_arguments - this->number_of_attacked_arguments) > 0;
+  }
+/* ============================================================================================================== */
+ /*
+  * get number of arguments
+  */
+  int taas::Af::get_number_of_arguments(){
+    return this->number_of_arguments;
+  }
+/* ============================================================================================================== */
+ /*
+  * get the attacked of arg
+  */
+  vector<int>& taas::Af::get_attacked(int arg){
+    return this->children[arg];
+  }
+/* ============================================================================================================== */
+ /*
+  * get vector (by reference) of number of attackers
+  */
+  vector<int>& taas::Af::get_number_of_attackers(){
+    return this->number_of_attackers;
   }
 /* ============================================================================================================== */
 }

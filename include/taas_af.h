@@ -5,14 +5,15 @@
  ============================================================================
  Name        : taas_af.h
  Author      : Matthias Thimm
- Version     : 0.1
+ Version     : 1.0
  Copyright   : GPL3
 ============================================================================
 */
+#pragma once
+
 #include <string>
 #include <vector>
 #include <unordered_map>
-#include <boost/dynamic_bitset.hpp>
 
 using namespace std;
 
@@ -32,8 +33,8 @@ namespace taas{
       vector<vector<int>> children;
       /** Maps arguments to their parents */
       vector<vector<int>> parents;
-      /** The initial arguments (unattacked ones) */
-      vector<bool> initial;
+      /** Maps arguments to the number of their attackers */
+      vector<int> number_of_attackers;
       /** number of attacked arguments (if < number_of_arguments, there
           is at least one initial argument) */
       int number_of_attacked_arguments;
@@ -43,13 +44,17 @@ namespace taas{
 
     public:
       Af();
-      void add_argument(string arg_name);
-      void add_attack(string arg_name1, string arg_name2);
-      int get_argument_index(string arg_name);
+      void add_argument(const string& arg_name);
+      void add_attack(const string& arg_name1, const string& arg_name2);
       void print();
+      int get_argument_index(const string& arg_name);
+      const string& get_argument_name(int argument);
       bool is_loop(int arg);
       bool is_initial(int arg);
       bool has_initial_arguments();
+      int get_number_of_arguments();
+      vector<int>& get_attacked(int arg);
+      vector<int>& get_number_of_attackers();
   };
 
 }

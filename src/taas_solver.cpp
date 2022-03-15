@@ -5,13 +5,14 @@
  ============================================================================
  Name        : taas_solver.cpp
  Author      : Matthias Thimm
- Version     : 0.1
+ Version     : 1.0
  Copyright   : GPL3
 ============================================================================
 */
 #include "taas_af.h"
 #include "taas_problem.h"
 #include "taas_solver.h"
+#include "taas_labeling.h"
 #include <boost/algorithm/string/trim.hpp>
 
 #include <string>
@@ -27,7 +28,7 @@ namespace taas{
   /*
    * constructor
    */
-  taas::Solver::Solver(string version_info, vector<taas::Problem> supported_problems, int(*solve_function)(taas::Problem,taas::Af,int)){
+  taas::Solver::Solver(string version_info, vector<taas::Problem> supported_problems, int(*solve_function)(taas::Problem,taas::Af&,taas::Labeling&,int)){
     this->version_info = version_info;
     this->supported_problems = supported_problems;
     // add standard problems
@@ -50,7 +51,8 @@ namespace taas{
 		  return 0;
 	  }
     // parse parameters
-    char *file_name = NULL, *file_format = NULL, *argument = NULL;
+    //char *file_name = NULL, *file_format = NULL, *argument = NULL;
+    string file_name = "", file_format = "", argument = "";
     taas::Problem problem;
     bool problem_specified = false;
     for(int i = 1; i < argc; i++){
@@ -87,11 +89,11 @@ namespace taas{
       cout << "Problem specification is missing (parameter '-p')" << endl;
       return 1;
     }
-    if( file_name == NULL ){
+    if( file_name == "" ){
       cout << "File specification is missing (parameter '-f')" << endl;
       return 1;
     }
-    if( file_format == NULL ){
+    if( file_format == "" ){
       cout << "File format specification is missing (parameter '-fo')" << endl;
       return 1;
     }
@@ -99,7 +101,7 @@ namespace taas{
       cout << "Problem not supported by this solver" << endl;
       return 1;
     }
-    if(strcmp(file_format,"apx") != 0 && strcmp(file_format,"tgf") != 0){
+    if(file_format != "apx" && file_format != "tgf"){
       cout << "File format not supported by this solver" << endl;
       return 1;
     }
@@ -110,14 +112,14 @@ namespace taas{
 		    return 1;
 	  }
     taas::Af af;
-    if(strcmp(file_format,"tgf") == 0)
+    if( file_format == "tgf" )
       af = parse_tgf(file);
     else
       af = parse_apx(file);
     file.close();
     int arg_idx = -1;
     if(taas::is_decision_problem(problem))
-      if(argument == NULL){
+      if(argument == ""){
         cout << "The problem requires the specification of a query argument (using '-a')" << endl;
         return 1;
       }else{
@@ -161,8 +163,41 @@ namespace taas{
 				return 0;
 			}
     }
-    // TODO compute grounded
-    // TODO call solve_function
+    // compute grounded
+    taas::Labeling grounded(af);
+    while(grounded.faf())
+      ;
+    // solve problems regarding grounded semantics
+    if( problem == DS_GR || problem == DC_GR){
+      if(grounded.is_in(arg_idx))
+        cout << "YES" << endl;
+      else cout << "NO" << endl;
+      return 0;
+    }
+    if( problem == SE_GR || problem == SE_CO ){
+      grounded.print();
+      cout << endl;
+      return 0;
+    }
+    if( problem == EE_GR ){
+      cout << "[";
+      grounded.print();
+      cout << "]" << endl;
+      return 0;
+    }
+    // if we have a decision problem and the query argument
+    // is IN or OUT in the grounded labeling, we can also answer
+    // (except for stable semantics)
+    if(taas::is_decision_problem(problem) && problem != DC_ST && problem != DS_ST)
+      if(grounded.is_in(arg_idx)){
+        cout << "YES" << endl;
+        return 0;
+      }else if(grounded.is_out(arg_idx)){
+        cout << "NO" << endl;
+        return 0;
+      }
+    // now solve the remaining problems
+    this->solve_function(problem,af,grounded,arg_idx);
     return 0;
   }
 /* ============================================================================================================== */

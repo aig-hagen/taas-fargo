@@ -1,5 +1,9 @@
 arg(a).
 arg(b).
 arg(c).
+arg(d).
+arg(e).
 att(a,b).
 att(b,c).
+att(c,d).
+att(d,e).

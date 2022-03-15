@@ -3,36 +3,41 @@
 /* ============================================================================================================== */
 /*
  ============================================================================
- Name        : taas_solver.h
+ Name        : taas_labeling.h
  Author      : Matthias Thimm
  Version     : 1.0
  Copyright   : GPL3
 ============================================================================
 */
-#include "taas_problem.h"
-#include "taas_labeling.h"
+#pragma once
 
-#include <string>
+#include "taas_af.h"
+
+#include <boost/dynamic_bitset.hpp>
 #include <vector>
-#include <iostream>
 
 using namespace std;
-/* ============================================================================================================== */
+
 namespace taas{
 
-  class Solver{
-      private:
-        string version_info;
-        vector<taas::Problem> supported_problems;
-        int(*solve_function)(taas::Problem,taas::Af&,taas::Labeling&,int);
-
-        taas::Af parse_tgf(ifstream& file);
-        taas::Af parse_apx(ifstream& file);
-      protected:
-
-      public:
-        Solver(string version_info, vector<taas::Problem> supported_problems, int (*solve_function)(taas::Problem,taas::Af&,taas::Labeling&,int));
-        int execute(int argc, char *argv[]);
+  class Labeling{
+    private:
+      boost::dynamic_bitset<> in;
+      boost::dynamic_bitset<> out;
+      vector<int> number_of_non_out_attackers;
+      taas::Af* af;
+      vector<int> unattacked_and_not_in_arguments;
+    public:
+      Labeling(taas::Af& af);
+      void set_in(int arg);
+      void set_out(int arg);
+      void reset(int arg);
+      bool is_in(int arg);
+      bool is_out(int arg);
+      bool is_reset(int arg);
+      bool faf();
+      void print_debug();
+      void print();
   };
 
 }

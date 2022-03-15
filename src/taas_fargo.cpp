@@ -5,7 +5,7 @@
  ============================================================================
  Name        : taas-fargo.cpp
  Author      : Matthias Thimm
- Version     : 0.1
+ Version     : 1.0
  Copyright   : GPL3
  Description : The taas-fargo solver for abstract argumentation.
 
@@ -14,15 +14,16 @@
 #include "taas_af.h"
 #include "taas_problem.h"
 #include "taas_solver.h"
+#include "taas_labeling.h"
 /* ============================================================================================================== */
-int solve(taas::Problem problem, taas::Af af, int argument = -1){
-
+int solve(taas::Problem problem, taas::Af& af, taas::Labeling& grounded, int argument = -1){
+  cout << "Here we have to do the actual work" << endl;
   return 0;
 }
 /* ============================================================================================================== */
 int main(int argc, char *argv[]){
   taas::Solver solver(
-    "taas-fargo v0.1 (2022-03-13)\nMatthias Thimm (matthias.thimm@fernuni-hagen.de)",
+    "taas-fargo v1.0 (2022-03-15)\nMatthias Thimm (matthias.thimm@fernuni-hagen.de)",
     {taas::Problem::DC_CO,taas::Problem::DC_PR},
     solve);
   return solver.execute(argc,argv);
