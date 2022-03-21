@@ -130,6 +130,13 @@ namespace taas{
   }
 /* ============================================================================================================== */
  /*
+  * get the attackers of arg
+  */
+  vector<int>& taas::Af::get_attackers(int arg){
+    return this->parents[arg];
+  }
+/* ============================================================================================================== */
+ /*
   * get vector (by reference) of number of attackers
   */
   vector<int>& taas::Af::get_number_of_attackers(){

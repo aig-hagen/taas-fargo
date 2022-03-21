@@ -3,34 +3,26 @@
 /* ============================================================================================================== */
 /*
  ============================================================================
- Name        : taas_solver.h
+ Name        : taas_compare.h
  Author      : Matthias Thimm
  Version     : 1.0
  Copyright   : GPL3
 ============================================================================
 */
-#include "taas_problem.h"
+#pragma once
+
+#include "taas_af.h"
 #include "taas_labeling.h"
 
-#include <string>
-#include <vector>
-#include <iostream>
-#include <map>
-
-using namespace std;
-/* ============================================================================================================== */
 namespace taas{
 
-  class Solver{
-      private:
-        string version_info;
-        vector<taas::Problem> supported_problems;
-        int(*solve_function)(taas::Problem,map<string,string>&,taas::Af&,taas::Labeling&,int);
-        taas::Af parse_tgf(ifstream& file);
-        taas::Af parse_apx(ifstream& file);
-      public:
-        Solver(string version_info, vector<taas::Problem> supported_problems, int (*solve_function)(taas::Problem,map<string,string>&,taas::Af&,taas::Labeling&,int));
-        int execute(int argc, char *argv[]);
+  class ArgumentCompare {
+    private:
+      taas::Af* af;
+      taas::Labeling* lab;
+    public:
+      ArgumentCompare(taas::Af& af, taas::Labeling& lab);
+      bool operator()(int arg1, int arg2);
   };
 
 }

@@ -3,36 +3,35 @@
 /* ============================================================================================================== */
 /*
  ============================================================================
- Name        : taas_solver.h
+ Name        : taas_compare.cpp
  Author      : Matthias Thimm
  Version     : 1.0
  Copyright   : GPL3
 ============================================================================
 */
-#include "taas_problem.h"
-#include "taas_labeling.h"
+#include "taas_compare.h"
 
-#include <string>
-#include <vector>
-#include <iostream>
-#include <map>
-
-using namespace std;
 /* ============================================================================================================== */
 namespace taas{
+/* ============================================================================================================== */
+  /*
+   * compare
+   */
+  taas::ArgumentCompare::ArgumentCompare(taas::Af& af, taas::Labeling& lab){
+    this->af = &af;
+    this->lab = &lab;
+  }
+/* ============================================================================================================== */
+ /*
+  * compare
+  */
+  bool taas::ArgumentCompare::operator()(int arg1, int arg2){
 
-  class Solver{
-      private:
-        string version_info;
-        vector<taas::Problem> supported_problems;
-        int(*solve_function)(taas::Problem,map<string,string>&,taas::Af&,taas::Labeling&,int);
-        taas::Af parse_tgf(ifstream& file);
-        taas::Af parse_apx(ifstream& file);
-      public:
-        Solver(string version_info, vector<taas::Problem> supported_problems, int (*solve_function)(taas::Problem,map<string,string>&,taas::Af&,taas::Labeling&,int));
-        int execute(int argc, char *argv[]);
-  };
 
+
+    return true;
+  }
+/* ============================================================================================================== */
 }
 /* ============================================================================================================== */
 /* == END FILE ================================================================================================== */

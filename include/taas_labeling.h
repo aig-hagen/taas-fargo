@@ -27,15 +27,22 @@ namespace taas{
       vector<int> number_of_non_out_attackers;
       taas::Af* af;
       vector<int> unattacked_and_not_in_arguments;
+      vector<int> not_unattacked_and_in_arguments;
+      vector<int> pred;
+      boost::dynamic_bitset<> conflicts;
+      int num_conflicts;
     public:
       Labeling(taas::Af& af);
       void set_in(int arg);
-      void set_out(int arg);
-      void reset(int arg);
+      void set_out(int arg, int from);
+      void reset_in(int arg);
+      void undo_attack(int arg, int from);
       bool is_in(int arg);
       bool is_out(int arg);
       bool is_reset(int arg);
       bool faf();
+      bool rev_faf();
+      bool has_conflict();
       void print_debug();
       void print();
   };

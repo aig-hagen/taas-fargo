@@ -20,6 +20,7 @@
 #include <vector>
 #include <algorithm>
 #include <fstream>
+#include <map>
 
 using namespace std;
 /* ============================================================================================================== */
@@ -28,7 +29,7 @@ namespace taas{
   /*
    * constructor
    */
-  taas::Solver::Solver(string version_info, vector<taas::Problem> supported_problems, int(*solve_function)(taas::Problem,taas::Af&,taas::Labeling&,int)){
+  taas::Solver::Solver(string version_info, vector<taas::Problem> supported_problems, int(*solve_function)(taas::Problem,map<string,string>&,taas::Af&,taas::Labeling&,int)){
     this->version_info = version_info;
     this->supported_problems = supported_problems;
     // add standard problems
@@ -53,6 +54,7 @@ namespace taas{
     // parse parameters
     //char *file_name = NULL, *file_format = NULL, *argument = NULL;
     string file_name = "", file_format = "", argument = "";
+    map<string,string> params;
     taas::Problem problem;
     bool problem_specified = false;
     for(int i = 1; i < argc; i++){
@@ -83,6 +85,9 @@ namespace taas{
         cout << taas::problems_to_string(this->supported_problems) << endl;
         return 0;
       }
+      // non-probo parameter, store it in params
+      params[argv[i]] = argv[i+1];
+      i++;
     }
     // check for issues with the parameters
     if( !problem_specified ){
@@ -197,7 +202,7 @@ namespace taas{
         return 0;
       }
     // now solve the remaining problems
-    this->solve_function(problem,af,grounded,arg_idx);
+    this->solve_function(problem,params,af,grounded,arg_idx);
     return 0;
   }
 /* ============================================================================================================== */

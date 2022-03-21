@@ -28,7 +28,11 @@ namespace taas{
     this->out = boost::dynamic_bitset<>(af.get_number_of_arguments());
     this->number_of_non_out_attackers = vector<int>(af.get_number_of_attackers());
     this->af = &af;
+    this->conflicts = boost::dynamic_bitset<>(af.get_number_of_arguments());
+    this->num_conflicts = 0;
     this->unattacked_and_not_in_arguments = vector<int>();
+    this->not_unattacked_and_in_arguments = vector<int>();
+    this->pred = vector<int>(af.get_number_of_arguments());
     for( int i = 0; i < af.get_number_of_arguments(); i++ )
       if(this->number_of_non_out_attackers[i] == 0)
         this->unattacked_and_not_in_arguments.push_back(i);
@@ -39,33 +43,84 @@ namespace taas{
    * set in
    */
    void taas::Labeling::set_in(int arg){
+     if(this->in.test(arg))
+      return;
      this->in.set(arg);
-     this->out.reset(arg);
+     // check for conflict
+     if(this->out.test(arg)){
+       if(!this->conflicts.test(arg)){
+         this->conflicts.set(arg);
+         this->num_conflicts++;
+       }
+       return;
+     }
      for(int a: this->af->get_attacked(arg))
-      this->set_out(a);
+      this->set_out(a, arg);
    }
 /* ============================================================================================================== */
   /*
    * set out
    */
-   void taas::Labeling::set_out(int arg){
+   void taas::Labeling::set_out(int arg, int from){
      if(this->out.test(arg))
       return;
-     this->in.reset(arg);
      this->out.set(arg);
+     this->pred[arg] = from;
+     // check for conflict
+     if(this->in.test(arg)){
+       if(!this->conflicts.test(arg)){
+         this->conflicts.set(arg);
+         this->num_conflicts++;
+       }
+       return;
+     }
      for(int a: this->af->get_attacked(arg)){
       this->number_of_non_out_attackers[a]--;
-      if(this->number_of_non_out_attackers[a] == 0)
+      if(this->number_of_non_out_attackers[a] == 0 && !this->in.test(a)){
+        this->pred[a] = arg;
         this->unattacked_and_not_in_arguments.push_back(a);
+      }
      }
    }
 /* ============================================================================================================== */
   /*
-   * reset
+   * reset in
    */
-   void taas::Labeling::reset(int arg){
+   void taas::Labeling::reset_in(int arg){
+     if(!this->in.test(arg))
+      return;
      this->in.reset(arg);
+     // check for conflict
+     if(this->out.test(arg)){
+       this->conflicts.reset(arg);
+       this->num_conflicts--;
+       return;
+     }
+     for(int a: this->af->get_attacked(arg))
+      this->undo_attack(a, arg);
+   }
+/* ============================================================================================================== */
+  /*
+   * An attacker of arg has been unset from IN,
+   * check whether this has implications and propagate further
+   */
+   void taas::Labeling::undo_attack(int arg, int from){
+     if(!this->out.test(arg))
+      return;
+     if(this->pred[arg] != from)
+      return;
      this->out.reset(arg);
+     // check for conflict
+     if(this->in.test(arg)){
+       this->conflicts.reset(arg);
+       this->num_conflicts--;
+       return;
+     }
+     for(int a: this->af->get_attacked(arg)){
+      this->number_of_non_out_attackers[a]++;
+      if(this->in.test(a) && this->pred[a] == arg)
+        this->not_unattacked_and_in_arguments.push_back(a);
+     }
    }
 /* ============================================================================================================== */
   /*
@@ -104,6 +159,27 @@ namespace taas{
    }
 /* ============================================================================================================== */
   /*
+   * the reverse of faf, used to undo changes made by faf
+   * return "true" if something changed
+   */
+   bool taas::Labeling::rev_faf(){
+     if(this->not_unattacked_and_in_arguments.empty())
+      return false;
+     int arg = this->not_unattacked_and_in_arguments.back();
+     this->not_unattacked_and_in_arguments.pop_back();
+     this->reset_in(arg);
+     return true;
+   }
+/* ============================================================================================================== */
+  /*
+   * whether we have detected some conflict during
+   * propagation
+   */
+   bool taas::Labeling::has_conflict(){
+     return this->num_conflicts > 0;
+   }
+/* ============================================================================================================== */
+  /*
    * print for debugging
    */
    void taas::Labeling::print_debug(){
@@ -135,6 +211,15 @@ namespace taas{
       else
        cout << ",";
       cout << this->af->get_argument_name(this->unattacked_and_not_in_arguments[i]);
+     }
+     cout << "}, NUNATT={";
+     is_first = true;
+     for( int i  = 0; i < this->not_unattacked_and_in_arguments.size() ; i++ ){
+      if(is_first)
+       is_first = false;
+      else
+       cout << ",";
+      cout << this->af->get_argument_name(this->not_unattacked_and_in_arguments[i]);
      }
      cout << "}, #ATT={";
      is_first = true;
