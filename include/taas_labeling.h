@@ -31,6 +31,7 @@ namespace taas{
       vector<int> pred;
       boost::dynamic_bitset<> conflicts;
       int num_conflicts;
+      vector<boost::dynamic_bitset<>> visited_attacks;      
     public:
       Labeling(taas::Af& af);
       void set_in(int arg);

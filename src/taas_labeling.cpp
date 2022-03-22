@@ -30,12 +30,15 @@ namespace taas{
     this->af = &af;
     this->conflicts = boost::dynamic_bitset<>(af.get_number_of_arguments());
     this->num_conflicts = 0;
+    this->visited_attacks = vector<boost::dynamic_bitset<>>(af.get_number_of_arguments());
     this->unattacked_and_not_in_arguments = vector<int>();
     this->not_unattacked_and_in_arguments = vector<int>();
     this->pred = vector<int>(af.get_number_of_arguments());
-    for( int i = 0; i < af.get_number_of_arguments(); i++ )
+    for( int i = 0; i < this->af->get_number_of_arguments(); i++ ){
+      this->visited_attacks[i].resize(this->af->get_attacked(i).size());
       if(this->number_of_non_out_attackers[i] == 0)
         this->unattacked_and_not_in_arguments.push_back(i);
+    }
   }
 /* ============================================================================================================== */
 /* ============================================================================================================== */
@@ -54,8 +57,10 @@ namespace taas{
        }
        return;
      }
-     for(int a: this->af->get_attacked(arg))
-      this->set_out(a, arg);
+     for(int i = 0; i < this->af->get_attacked(arg).size(); i++){
+      this->visited_attacks[arg].set(i);
+      this->set_out(this->af->get_attacked(arg)[i], arg);
+     }
    }
 /* ============================================================================================================== */
   /*
@@ -74,11 +79,12 @@ namespace taas{
        }
        return;
      }
-     for(int a: this->af->get_attacked(arg)){
-      this->number_of_non_out_attackers[a]--;
-      if(this->number_of_non_out_attackers[a] == 0 && !this->in.test(a)){
-        this->pred[a] = arg;
-        this->unattacked_and_not_in_arguments.push_back(a);
+     for(int i = 0; i < this->af->get_attacked(arg).size(); i++){
+      this->visited_attacks[arg].set(i);
+      this->number_of_non_out_attackers[this->af->get_attacked(arg)[i]]--;
+      if(this->number_of_non_out_attackers[this->af->get_attacked(arg)[i]] == 0 && !this->in.test(this->af->get_attacked(arg)[i])){
+        this->pred[this->af->get_attacked(arg)[i]] = arg;
+        this->unattacked_and_not_in_arguments.push_back(this->af->get_attacked(arg)[i]);
       }
      }
    }
@@ -94,10 +100,13 @@ namespace taas{
      if(this->out.test(arg)){
        this->conflicts.reset(arg);
        this->num_conflicts--;
-       return;
      }
-     for(int a: this->af->get_attacked(arg))
-      this->undo_attack(a, arg);
+     for(int i = 0; i < this->af->get_attacked(arg).size(); i++){
+      if(this->visited_attacks[arg].test(i)){
+        this->visited_attacks[arg].reset(i);
+        this->undo_attack(this->af->get_attacked(arg)[i], arg);
+      }
+     }
    }
 /* ============================================================================================================== */
   /*
@@ -114,12 +123,14 @@ namespace taas{
      if(this->in.test(arg)){
        this->conflicts.reset(arg);
        this->num_conflicts--;
-       return;
      }
-     for(int a: this->af->get_attacked(arg)){
-      this->number_of_non_out_attackers[a]++;
-      if(this->in.test(a) && this->pred[a] == arg)
-        this->not_unattacked_and_in_arguments.push_back(a);
+     for(int i = 0; i < this->af->get_attacked(arg).size(); i++){
+      if(this->visited_attacks[arg].test(i)){
+        this->visited_attacks[arg].reset(i);
+        this->number_of_non_out_attackers[this->af->get_attacked(arg)[i]]++;
+        if(this->in.test(this->af->get_attacked(arg)[i]) && this->pred[this->af->get_attacked(arg)[i]] == arg)
+          this->not_unattacked_and_in_arguments.push_back(this->af->get_attacked(arg)[i]);
+      }
      }
    }
 /* ============================================================================================================== */

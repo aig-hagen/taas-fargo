@@ -26,9 +26,7 @@ namespace taas{
   * compare
   */
   bool taas::ArgumentCompare::operator()(int arg1, int arg2){
-
-
-
+    //TODO
     return true;
   }
 /* ============================================================================================================== */
