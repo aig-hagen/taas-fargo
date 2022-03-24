@@ -24,18 +24,17 @@ namespace taas{
    * constructor
    */
   taas::Labeling::Labeling(taas::Af& af){
+    this->decision_id = 0;
     this->in = boost::dynamic_bitset<>(af.get_number_of_arguments());
     this->out = boost::dynamic_bitset<>(af.get_number_of_arguments());
     this->number_of_non_out_attackers = vector<int>(af.get_number_of_attackers());
     this->af = &af;
     this->conflicts = boost::dynamic_bitset<>(af.get_number_of_arguments());
     this->num_conflicts = 0;
-    this->visited_attacks = vector<boost::dynamic_bitset<>>(af.get_number_of_arguments());
+    this->decision_level = vector<int>(af.get_number_of_arguments());
     this->unattacked_and_not_in_arguments = vector<int>();
     this->not_unattacked_and_in_arguments = vector<int>();
-    this->pred = vector<int>(af.get_number_of_arguments());
     for( int i = 0; i < this->af->get_number_of_arguments(); i++ ){
-      this->visited_attacks[i].resize(this->af->get_attacked(i).size());
       if(this->number_of_non_out_attackers[i] == 0)
         this->unattacked_and_not_in_arguments.push_back(i);
     }
@@ -45,7 +44,7 @@ namespace taas{
   /*
    * set in
    */
-   void taas::Labeling::set_in(int arg){
+   void taas::Labeling::set_in(int arg, bool inc_decision_id){
      if(this->in.test(arg))
       return;
      this->in.set(arg);
@@ -57,20 +56,20 @@ namespace taas{
        }
        return;
      }
-     for(int i = 0; i < this->af->get_attacked(arg).size(); i++){
-      this->visited_attacks[arg].set(i);
-      this->set_out(this->af->get_attacked(arg)[i], arg);
-     }
+     if(inc_decision_id)
+      this->decision_id++;
+     this->decision_level[arg] = this->decision_id;
+     for(int i = 0; i < this->af->get_attacked(arg).size(); i++)
+      this->set_out(this->af->get_attacked(arg)[i]);
    }
 /* ============================================================================================================== */
   /*
    * set out
    */
-   void taas::Labeling::set_out(int arg, int from){
+   void taas::Labeling::set_out(int arg){
      if(this->out.test(arg))
       return;
      this->out.set(arg);
-     this->pred[arg] = from;
      // check for conflict
      if(this->in.test(arg)){
        if(!this->conflicts.test(arg)){
@@ -79,13 +78,11 @@ namespace taas{
        }
        return;
      }
+     this->decision_level[arg] = this->decision_id;
      for(int i = 0; i < this->af->get_attacked(arg).size(); i++){
-      this->visited_attacks[arg].set(i);
       this->number_of_non_out_attackers[this->af->get_attacked(arg)[i]]--;
-      if(this->number_of_non_out_attackers[this->af->get_attacked(arg)[i]] == 0 && !this->in.test(this->af->get_attacked(arg)[i])){
-        this->pred[this->af->get_attacked(arg)[i]] = arg;
+      if(this->number_of_non_out_attackers[this->af->get_attacked(arg)[i]] == 0 && !this->in.test(this->af->get_attacked(arg)[i]))
         this->unattacked_and_not_in_arguments.push_back(this->af->get_attacked(arg)[i]);
-      }
      }
    }
 /* ============================================================================================================== */
@@ -101,22 +98,18 @@ namespace taas{
        this->conflicts.reset(arg);
        this->num_conflicts--;
      }
-     for(int i = 0; i < this->af->get_attacked(arg).size(); i++){
-      if(this->visited_attacks[arg].test(i)){
-        this->visited_attacks[arg].reset(i);
-        this->undo_attack(this->af->get_attacked(arg)[i], arg);
-      }
-     }
+     for(int i = 0; i < this->af->get_attacked(arg).size(); i++)
+      this->undo_attack(this->af->get_attacked(arg)[i], this->decision_level[arg]);
    }
 /* ============================================================================================================== */
   /*
    * An attacker of arg has been unset from IN,
    * check whether this has implications and propagate further
    */
-   void taas::Labeling::undo_attack(int arg, int from){
+   void taas::Labeling::undo_attack(int arg, int decision_id){
      if(!this->out.test(arg))
       return;
-     if(this->pred[arg] != from)
+     if(this->decision_level[arg] != decision_id && !this->in.test(arg))
       return;
      this->out.reset(arg);
      // check for conflict
@@ -124,13 +117,12 @@ namespace taas{
        this->conflicts.reset(arg);
        this->num_conflicts--;
      }
-     for(int i = 0; i < this->af->get_attacked(arg).size(); i++){
-      if(this->visited_attacks[arg].test(i)){
-        this->visited_attacks[arg].reset(i);
+     if(this->decision_level[arg] == decision_id){
+       for(int i = 0; i < this->af->get_attacked(arg).size(); i++){
         this->number_of_non_out_attackers[this->af->get_attacked(arg)[i]]++;
-        if(this->in.test(this->af->get_attacked(arg)[i]) && this->pred[this->af->get_attacked(arg)[i]] == arg)
-          this->not_unattacked_and_in_arguments.push_back(this->af->get_attacked(arg)[i]);
-      }
+        if(this->in.test(this->af->get_attacked(arg)[i]) && this->decision_level[this->af->get_attacked(arg)[i]] == decision_id)
+         this->not_unattacked_and_in_arguments.push_back(this->af->get_attacked(arg)[i]);
+       }
      }
    }
 /* ============================================================================================================== */
@@ -165,7 +157,7 @@ namespace taas{
       return false;
      int arg = this->unattacked_and_not_in_arguments.back();
      this->unattacked_and_not_in_arguments.pop_back();
-     this->set_in(arg);
+     this->set_in(arg,false);
      return true;
    }
 /* ============================================================================================================== */
@@ -241,7 +233,41 @@ namespace taas{
        cout << ",";
       cout << this->af->get_argument_name(i) << "=" << this->number_of_non_out_attackers[i];
      }
-     cout << "}" << endl;
+     cout << "}, DLEV={";
+     is_first = true;
+     for( int i  = 0; i < this->af->get_number_of_arguments() ; i++ ){
+      if(this->decision_level[i] == 0 )
+        continue;
+      if(is_first)
+       is_first = false;
+      else
+       cout << ",";
+      cout << this->af->get_argument_name(i) << "=" << this->decision_level[i];
+     }
+     /*cout << "}, VATT={";
+     is_first = true;
+     for(int arg1 = 0; arg1 < this->af->get_number_of_arguments() ; arg1++ ){
+       for(int arg2 = 0; arg2 < this->visited_attacks[arg1].size(); arg2++){
+         if(this->visited_attacks[arg1][arg2] > 0){
+           if(is_first)
+             is_first = false;
+           else cout << ",";
+           cout << "(" << this->af->get_argument_name(arg1) << "," << this->af->get_argument_name(this->af->get_attacked(arg1)[arg2]) << ")=" << this->visited_attacks[arg1][arg2];
+         }
+       }
+     }*/
+     cout << "}, CONFLICTS={";
+     is_first = true;
+     for( int i  = 0; i < this->af->get_number_of_arguments() ; i++ ){
+       if(this->conflicts.test(i)){
+        if(is_first)
+         is_first = false;
+        else
+         cout << ",";
+        cout << this->af->get_argument_name(i);
+      }
+     }
+     cout << "}, NUM_CONFLICTS=" << this->num_conflicts << endl;
    }
 /* ============================================================================================================== */
   /*

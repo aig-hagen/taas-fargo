@@ -17,6 +17,12 @@ namespace taas{
   /*
    * compare
    */
+  taas::ArgumentCompare::ArgumentCompare(){    
+  }
+/* ============================================================================================================== */
+  /*
+   * compare
+   */
   taas::ArgumentCompare::ArgumentCompare(taas::Af& af, taas::Labeling& lab){
     this->af = &af;
     this->lab = &lab;

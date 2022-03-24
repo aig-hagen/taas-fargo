@@ -21,6 +21,7 @@ namespace taas{
       taas::Af* af;
       taas::Labeling* lab;
     public:
+      ArgumentCompare();
       ArgumentCompare(taas::Af& af, taas::Labeling& lab);
       bool operator()(int arg1, int arg2);
   };

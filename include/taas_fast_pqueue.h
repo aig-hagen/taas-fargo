@@ -3,7 +3,7 @@
 /* ============================================================================================================== */
 /*
  ============================================================================
- Name        : taas_labeling.h
+ Name        : taas_fast_pqueue.h
  Author      : Matthias Thimm
  Version     : 1.0
  Copyright   : GPL3
@@ -11,43 +11,33 @@
 */
 #pragma once
 
-#include "taas_af.h"
+#include "taas_compare.h"
 
 #include <boost/dynamic_bitset.hpp>
+#include <queue>
 #include <vector>
 
 using namespace std;
 
 namespace taas{
 
-  class Labeling{
+  class FastPriorityQueue {
     private:
-      unsigned int decision_id;
-      boost::dynamic_bitset<> in;
-      boost::dynamic_bitset<> out;
-      vector<int> number_of_non_out_attackers;
-      taas::Af* af;
-      vector<int> unattacked_and_not_in_arguments;
-      vector<int> not_unattacked_and_in_arguments;
-      boost::dynamic_bitset<> conflicts;
-      int num_conflicts;
-      vector<int> decision_level;
+      boost::dynamic_bitset<> b;
+      priority_queue<int,vector<int>,taas::ArgumentCompare> q;
+      vector<int> pred;
+      void trim();
     public:
-      Labeling(taas::Af& af);
-      void set_in(int arg,bool inc_decision_id = true);
-      void set_out(int arg);
-      void reset_in(int arg);
-      void undo_attack(int arg, int decision_id);
-      bool is_in(int arg);
-      bool is_out(int arg);
-      bool is_reset(int arg);
-      bool faf();
-      bool rev_faf();
-      bool has_conflict();
-      void print_debug();
-      void print();
+      FastPriorityQueue(const taas::FastPriorityQueue & other);
+      FastPriorityQueue(int num_of_arguments,const taas::ArgumentCompare & c);
+      void add(int arg, int pred);
+      void remove(int arg);
+      int top_and_pop();
+      bool contains(int arg);
+      bool empty();
+      int get_pred(int arg);
+      void print(taas::Af & af);
   };
-
 }
 /* ============================================================================================================== */
 /* == END FILE ================================================================================================== */

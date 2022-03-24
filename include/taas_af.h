@@ -55,7 +55,7 @@ namespace taas{
       int get_number_of_arguments();
       vector<int>& get_attacked(int arg);
       vector<int>& get_attackers(int arg);
-      vector<int>& get_number_of_attackers();
+      vector<int>& get_number_of_attackers();      
   };
 
 }

@@ -8,9 +8,9 @@ CFLAGS    = -Wall -Wno-parentheses -Wno-sign-compare -Wno-writable-strings -std=
 LFLAGS    = -Wall
 IFLAGS    = -I include
 
-$(TARGET): $(SRC_DIR)/taas_fargo.cpp $(BUILD_DIR)/taas_af.o $(BUILD_DIR)/taas_solver.o $(BUILD_DIR)/taas_problem.o $(BUILD_DIR)/taas_labeling.o $(BUILD_DIR)/taas_compare.o
+$(TARGET): $(SRC_DIR)/taas_fargo.cpp $(BUILD_DIR)/taas_af.o $(BUILD_DIR)/taas_solver.o $(BUILD_DIR)/taas_problem.o $(BUILD_DIR)/taas_labeling.o $(BUILD_DIR)/taas_compare.o $(BUILD_DIR)/taas_util.o $(BUILD_DIR)/taas_fast_pqueue.o
 	@echo "Building and linking" $(TARGET)
-	@$(CXX) $(CFLAGS) $(IFLAGS) $(SRC_DIR)/taas_fargo.cpp -o $(TARGET) $(BUILD_DIR)/taas_af.o $(BUILD_DIR)/taas_solver.o $(BUILD_DIR)/taas_problem.o $(BUILD_DIR)/taas_labeling.o $(BUILD_DIR)/taas_compare.o $(LFLAGS)
+	@$(CXX) $(CFLAGS) $(IFLAGS) $(SRC_DIR)/taas_fargo.cpp -o $(TARGET) $(BUILD_DIR)/taas_af.o $(BUILD_DIR)/taas_solver.o $(BUILD_DIR)/taas_problem.o $(BUILD_DIR)/taas_labeling.o $(BUILD_DIR)/taas_compare.o $(BUILD_DIR)/taas_util.o $(BUILD_DIR)/taas_fast_pqueue.o $(LFLAGS)
 
 $(BUILD_DIR)/taas_af.o: $(INCLUDE_DIR)/taas_af.h $(SRC_DIR)/taas_af.cpp
 	@echo "Building taas::Af"
@@ -36,6 +36,16 @@ $(BUILD_DIR)/taas_compare.o: $(INCLUDE_DIR)/taas_compare.h $(SRC_DIR)/taas_compa
 	@echo "Building taas::ArgumentCompare"
 	@mkdir -p $(BUILD_DIR)
 	@$(CXX) $(CFLAGS) $(IFLAGS) -c $(SRC_DIR)/taas_compare.cpp -o $@
+
+$(BUILD_DIR)/taas_util.o: $(INCLUDE_DIR)/taas_util.h $(SRC_DIR)/taas_util.cpp
+	@echo "Building taas::Util"
+	@mkdir -p $(BUILD_DIR)
+	@$(CXX) $(CFLAGS) $(IFLAGS) -c $(SRC_DIR)/taas_util.cpp -o $@
+
+$(BUILD_DIR)/taas_fast_pqueue.o: $(INCLUDE_DIR)/taas_fast_pqueue.h $(SRC_DIR)/taas_fast_pqueue.cpp
+	@echo "Building taas::FastPriorityQueue"
+	@mkdir -p $(BUILD_DIR)
+	@$(CXX) $(CFLAGS) $(IFLAGS) -c $(SRC_DIR)/taas_fast_pqueue.cpp -o $@
 
 clean:
 	@echo "Cleaning..."
