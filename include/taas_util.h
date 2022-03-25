@@ -25,6 +25,7 @@ namespace taas{
     void print_arg_vector(vector<int> & v, taas::Af& af);
     void print_arg_bitset(vector<bool> & b, taas::Af& af);
     void print_arg_stack(stack<int> & s, taas::Af& af);
+    void print_arglist_stack(stack<vector<int>> & s, taas::Af& af);
     void print_pqueue_stack(stack<taas::FastPriorityQueue*> & s, taas::Af& af);
 }
 /* ============================================================================================================== */

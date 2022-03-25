@@ -16,13 +16,16 @@
 
 namespace taas{
 
+  enum SortOrder {NONE,ASC_IN_DEGREE,DESC_IN_DEGREE,ASC_OUT_DEGREE,DESC_OUT_DEGREE};
+
   class ArgumentCompare {
     private:
       taas::Af* af;
       taas::Labeling* lab;
+      taas::SortOrder order;
     public:
       ArgumentCompare();
-      ArgumentCompare(taas::Af& af, taas::Labeling& lab);
+      ArgumentCompare(taas::Af& af, taas::Labeling& lab, taas::SortOrder order);
       bool operator()(int arg1, int arg2);
   };
 

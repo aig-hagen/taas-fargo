@@ -92,7 +92,7 @@ namespace taas{
    * print
    */
    void taas::FastPriorityQueue::print(taas::Af & af){
-     //print_arg_bitset(this->b,af);
+     print_arg_bitset(this->b,af);
    }
 /* ============================================================================================================== */
 }

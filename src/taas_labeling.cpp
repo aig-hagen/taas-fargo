@@ -182,6 +182,13 @@ namespace taas{
    }
 /* ============================================================================================================== */
   /*
+   * the number of non-out parents of arg
+   */
+  int taas::Labeling::get_number_of_non_out_attackers(int arg){
+    return this->number_of_non_out_attackers[arg];
+  }
+/* ============================================================================================================== */
+  /*
    * print for debugging
    */
    void taas::Labeling::print_debug(){

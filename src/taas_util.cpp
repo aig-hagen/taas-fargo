@@ -39,10 +39,10 @@ namespace taas{
    * print some bitset with argument identifiers
    */
    void print_arg_bitset(vector<bool> & b, taas::Af& af){
-  /*   bool is_first = true;
+     bool is_first = true;
      cout << "[";
      for( int a = 0; a < b.size(); a++ ){
-       if(!b.test(a))
+       if(!b[a])
         continue;
        if(is_first)
           is_first = false;
@@ -50,7 +50,7 @@ namespace taas{
          cout << ",";
        cout << af.get_argument_name(a);
      }
-     cout << "]";*/
+     cout << "]";
    }
 /* ============================================================================================================== */
   /*
@@ -66,6 +66,23 @@ namespace taas{
        if(is_first) is_first = false;
        else cout << ",";
        cout << af.get_argument_name(arg);
+     }
+     cout << ">";
+   }
+/* ============================================================================================================== */
+  /*
+   * print some stack with lists argument identifiers
+   */
+   void print_arglist_stack(stack<vector<int>> & s, taas::Af& af){
+     bool is_first= true;
+     stack<vector<int>> s_tmp(s);
+     cout << "<";
+     while(!s_tmp.empty()){
+       vector<int> args = s_tmp.top();
+       s_tmp.pop();
+       if(is_first) is_first = false;
+       else cout << ",";
+       print_arg_vector(args,af);
      }
      cout << ">";
    }

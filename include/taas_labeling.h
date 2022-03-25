@@ -43,6 +43,7 @@ namespace taas{
       bool faf();
       bool rev_faf();
       bool has_conflict();
+      int get_number_of_non_out_attackers(int arg);
       void print_debug();
       void print();
   };
