@@ -16,7 +16,7 @@
 
 namespace taas{
 
-  enum SortOrder {NONE,ASC_IN_DEGREE,DESC_IN_DEGREE,ASC_OUT_DEGREE,DESC_OUT_DEGREE};
+  enum SortOrder {NUMERICAL,ASC_IN_DEGREE,DESC_IN_DEGREE,ASC_OUT_DEGREE,DESC_OUT_DEGREE};
 
   class ArgumentCompare {
     private:

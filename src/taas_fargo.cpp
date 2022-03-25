@@ -26,6 +26,7 @@
 #include <queue>
 #include <stack>
 #include <utility>
+#include <algorithm>
 
 using namespace std;
 /* ============================================================================================================== */
@@ -42,8 +43,8 @@ int solve(taas::Problem problem, map<string,string>& params, taas::Af& af, taas:
       order_defeaters = taas::ASC_OUT_DEGREE;
     else if(params["-sd"] == "desc_out")
       order_defeaters = taas::DESC_OUT_DEGREE;
-    else order_defeaters = taas::NONE;
-  }else order_defeaters = taas::NONE;
+    else order_defeaters = taas::NUMERICAL;
+  }else order_defeaters = taas::NUMERICAL;
   if(params.find("-sm") != params.end()){
     if(params["-sm"] == "asc_in")
       order_must_outs = taas::ASC_IN_DEGREE;
@@ -53,8 +54,10 @@ int solve(taas::Problem problem, map<string,string>& params, taas::Af& af, taas:
       order_must_outs = taas::ASC_OUT_DEGREE;
     else if(params["-sm"] == "desc_out")
       order_must_outs = taas::DESC_OUT_DEGREE;
-    else order_must_outs = taas::NONE;
-  }else order_must_outs = taas::NONE;
+    else order_must_outs = taas::NUMERICAL;
+  }else order_must_outs = taas::NUMERICAL;
+  taas::ArgumentCompare defeater_compare(af,lab,order_defeaters);
+  taas::ArgumentCompare must_out_compare(af,lab,order_must_outs);
   #ifdef DEBUG
     cout << "Debugging on!" << endl;
     cout << "Problem:  " << taas::problem_to_string(problem) << endl;
@@ -68,7 +71,7 @@ int solve(taas::Problem problem, map<string,string>& params, taas::Af& af, taas:
   int next_out, tmp;
   int current_arg;
   // arguments that must be turned OUT
-  taas::FastPriorityQueue must_out = taas::FastPriorityQueue(af.get_number_of_arguments(),taas::ArgumentCompare(af,lab,order_must_outs));
+  taas::FastPriorityQueue must_out = taas::FastPriorityQueue(af.get_number_of_arguments(),must_out_compare);
   // arguments that have already been unsuccessfully shown to be IN
   vector<bool> not_in(af.get_number_of_arguments());
   // arguments that are selected by the key argument to be tried next
@@ -281,7 +284,7 @@ int solve(taas::Problem problem, map<string,string>& params, taas::Af& af, taas:
         cout << endl;
       #endif
       // sort parents of next_out
-      sort(af.get_attackers(next_out).begin(),af.get_attackers(next_out).end(),taas::ArgumentCompare(af,lab,order_defeaters));
+      sort(af.get_attackers(next_out).begin(),af.get_attackers(next_out).end(),defeater_compare);
       //add this argument back to the stack (to indicate
       // when it should be backtracked) and then the attackers
       // of next_out (but only those that are not already impossible
