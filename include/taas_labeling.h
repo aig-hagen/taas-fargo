@@ -13,7 +13,6 @@
 
 #include "taas_af.h"
 
-#include <boost/dynamic_bitset.hpp>
 #include <vector>
 
 using namespace std;
@@ -23,13 +22,13 @@ namespace taas{
   class Labeling{
     private:
       unsigned int decision_id;
-      boost::dynamic_bitset<> in;
-      boost::dynamic_bitset<> out;
+      vector<bool> in;
+      vector<bool> out;
       vector<int> number_of_non_out_attackers;
       taas::Af* af;
       vector<int> unattacked_and_not_in_arguments;
       vector<int> not_unattacked_and_in_arguments;
-      boost::dynamic_bitset<> conflicts;
+      vector<bool> conflicts;
       int num_conflicts;
       vector<int> decision_level;
     public:

@@ -17,21 +17,12 @@
 namespace taas{
 /* ============================================================================================================== */
   /*
-   * copy constructor
-   */
-  taas::FastPriorityQueue::FastPriorityQueue(const taas::FastPriorityQueue & other){
-    this->b = boost::dynamic_bitset<>(other.b);
-    this->q = priority_queue<int,vector<int>,taas::ArgumentCompare>(other.q);
-    this->pred = vector<int>(other.pred);
-  }
-/* ============================================================================================================== */
-  /*
    * constructor
    */
-  taas::FastPriorityQueue::FastPriorityQueue(int num_of_arguments,const taas::ArgumentCompare & c){
-      this->b = boost::dynamic_bitset<>(num_of_arguments);
+  taas::FastPriorityQueue::FastPriorityQueue(int number_of_arguments, const taas::ArgumentCompare & c){
+      this->b = vector<bool>(number_of_arguments);
       this->q = priority_queue<int,vector<int>,taas::ArgumentCompare>(c);
-      this->pred = vector<int>(num_of_arguments);
+      this->pred = vector<int>(number_of_arguments);
   }
 /* ============================================================================================================== */
   /*
@@ -39,7 +30,7 @@ namespace taas{
    */
   void taas::FastPriorityQueue::trim(){
     while(!this->q.empty()){
-      if(!this->b.test(this->q.top()))
+      if(!this->b[this->q.top()])
         this->q.pop();
       else return;
     }
@@ -49,7 +40,7 @@ namespace taas{
    * add
    */
   void taas::FastPriorityQueue::add(int arg, int pred){
-    this->b.set(arg);
+    this->b[arg] = true;
     this->q.push(arg);
     this->pred[arg] = pred;
   }
@@ -58,7 +49,7 @@ namespace taas{
    * remove
    */
    void taas::FastPriorityQueue::remove(int arg){
-     this->b.reset(arg);
+     this->b[arg] = false;
      // do no explicitly remove from q,
      // this is done lazily by checking b when needed
    }
@@ -71,7 +62,7 @@ namespace taas{
       return -1;
      int next_out = this->q.top();
      this->q.pop();
-     this->b.reset(next_out);
+     this->b[next_out] = false;
      return next_out;
    }
 /* ============================================================================================================== */
@@ -79,7 +70,7 @@ namespace taas{
    * contains
    */
    bool taas::FastPriorityQueue::contains(int arg){
-     return this->b.test(arg);
+     return this->b[arg];
    }
 /* ============================================================================================================== */
   /*
@@ -101,7 +92,7 @@ namespace taas{
    * print
    */
    void taas::FastPriorityQueue::print(taas::Af & af){
-     print_arg_bitset(this->b,af);
+     //print_arg_bitset(this->b,af);
    }
 /* ============================================================================================================== */
 }

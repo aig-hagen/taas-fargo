@@ -13,7 +13,6 @@
 
 #include "taas_compare.h"
 
-#include <boost/dynamic_bitset.hpp>
 #include <queue>
 #include <vector>
 
@@ -23,13 +22,12 @@ namespace taas{
 
   class FastPriorityQueue {
     private:
-      boost::dynamic_bitset<> b;
+      vector<bool> b;
       priority_queue<int,vector<int>,taas::ArgumentCompare> q;
       vector<int> pred;
       void trim();
     public:
-      FastPriorityQueue(const taas::FastPriorityQueue & other);
-      FastPriorityQueue(int num_of_arguments,const taas::ArgumentCompare & c);
+      FastPriorityQueue(int number_of_arguments, const taas::ArgumentCompare & c);
       void add(int arg, int pred);
       void remove(int arg);
       int top_and_pop();

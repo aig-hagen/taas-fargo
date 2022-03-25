@@ -4,7 +4,7 @@ BUILD_DIR   = build
 TARGET      = taas-fargo
 
 CXX       = clang++
-CFLAGS    = -Wall -Wno-parentheses -Wno-sign-compare -Wno-writable-strings -std=c++11 -O3
+CFLAGS    = -Wall -Wno-parentheses -Wno-sign-compare -Wno-writable-strings -std=c++11 -O3 -stdlib=libc++
 LFLAGS    = -Wall
 IFLAGS    = -I include
 
@@ -22,12 +22,12 @@ $(BUILD_DIR)/taas_problem.o: $(INCLUDE_DIR)/taas_problem.h $(SRC_DIR)/taas_probl
 	@mkdir -p $(BUILD_DIR)
 	@$(CXX) $(CFLAGS) $(IFLAGS) -c $(SRC_DIR)/taas_problem.cpp -o $@
 
-$(BUILD_DIR)/taas_solver.o: $(INCLUDE_DIR)/taas_solver.h $(SRC_DIR)/taas_solver.cpp $(BUILD_DIR)/taas_problem.o
+$(BUILD_DIR)/taas_solver.o: $(INCLUDE_DIR)/taas_solver.h $(SRC_DIR)/taas_solver.cpp $(BUILD_DIR)/taas_problem.o $(BUILD_DIR)/taas_labeling.o
 	@echo "Building taas::Solver"
 	@mkdir -p $(BUILD_DIR)
 	@$(CXX) $(CFLAGS) $(IFLAGS) -c $(SRC_DIR)/taas_solver.cpp -o $@
 
-$(BUILD_DIR)/taas_labeling.o: $(INCLUDE_DIR)/taas_labeling.h $(SRC_DIR)/taas_labeling.cpp
+$(BUILD_DIR)/taas_labeling.o: $(INCLUDE_DIR)/taas_labeling.h $(SRC_DIR)/taas_labeling.cpp $(BUILD_DIR)/taas_af.o
 	@echo "Building taas::Labeling"
 	@mkdir -p $(BUILD_DIR)
 	@$(CXX) $(CFLAGS) $(IFLAGS) -c $(SRC_DIR)/taas_labeling.cpp -o $@

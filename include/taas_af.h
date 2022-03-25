@@ -40,8 +40,6 @@ namespace taas{
       int number_of_attacked_arguments;
       /** Self-attacking arguments */
       vector<bool> loops;
-    protected:
-
     public:
       Af();
       void add_argument(const string& arg_name);
@@ -55,7 +53,7 @@ namespace taas{
       int get_number_of_arguments();
       vector<int>& get_attacked(int arg);
       vector<int>& get_attackers(int arg);
-      vector<int>& get_number_of_attackers();      
+      vector<int>& get_number_of_attackers();
   };
 
 }

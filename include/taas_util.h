@@ -14,7 +14,6 @@
 #include "taas_af.h"
 #include "taas_fast_pqueue.h"
 
-#include <boost/dynamic_bitset.hpp>
 #include <vector>
 #include <stack>
 
@@ -24,7 +23,7 @@ using namespace std;
 namespace taas{
 
     void print_arg_vector(vector<int> & v, taas::Af& af);
-    void print_arg_bitset(boost::dynamic_bitset<> & b, taas::Af& af);
+    void print_arg_bitset(vector<bool> & b, taas::Af& af);
     void print_arg_stack(stack<int> & s, taas::Af& af);
     void print_pqueue_stack(stack<taas::FastPriorityQueue*> & s, taas::Af& af);
 }

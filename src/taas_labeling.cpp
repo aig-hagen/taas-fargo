@@ -13,7 +13,6 @@
 #include "taas_af.h"
 
 #include <iostream>
-#include <boost/dynamic_bitset.hpp>
 
 using namespace std;
 
@@ -25,11 +24,11 @@ namespace taas{
    */
   taas::Labeling::Labeling(taas::Af& af){
     this->decision_id = 0;
-    this->in = boost::dynamic_bitset<>(af.get_number_of_arguments());
-    this->out = boost::dynamic_bitset<>(af.get_number_of_arguments());
+    this->in = vector<bool>(af.get_number_of_arguments());
+    this->out = vector<bool>(af.get_number_of_arguments());
     this->number_of_non_out_attackers = vector<int>(af.get_number_of_attackers());
     this->af = &af;
-    this->conflicts = boost::dynamic_bitset<>(af.get_number_of_arguments());
+    this->conflicts = vector<bool>(af.get_number_of_arguments());
     this->num_conflicts = 0;
     this->decision_level = vector<int>(af.get_number_of_arguments());
     this->unattacked_and_not_in_arguments = vector<int>();
@@ -45,13 +44,13 @@ namespace taas{
    * set in
    */
    void taas::Labeling::set_in(int arg, bool inc_decision_id){
-     if(this->in.test(arg))
+     if(this->in[arg])
       return;
-     this->in.set(arg);
+     this->in[arg] = true;
      // check for conflict
-     if(this->out.test(arg)){
-       if(!this->conflicts.test(arg)){
-         this->conflicts.set(arg);
+     if(this->out[arg]){
+       if(!this->conflicts[arg]){
+         this->conflicts[arg] = true;
          this->num_conflicts++;
        }
        return;
@@ -67,13 +66,13 @@ namespace taas{
    * set out
    */
    void taas::Labeling::set_out(int arg){
-     if(this->out.test(arg))
+     if(this->out[arg])
       return;
-     this->out.set(arg);
+     this->out[arg] = true;
      // check for conflict
-     if(this->in.test(arg)){
-       if(!this->conflicts.test(arg)){
-         this->conflicts.set(arg);
+     if(this->in[arg]){
+       if(!this->conflicts[arg]){
+         this->conflicts[arg];
          this->num_conflicts++;
        }
        return;
@@ -81,7 +80,7 @@ namespace taas{
      this->decision_level[arg] = this->decision_id;
      for(int i = 0; i < this->af->get_attacked(arg).size(); i++){
       this->number_of_non_out_attackers[this->af->get_attacked(arg)[i]]--;
-      if(this->number_of_non_out_attackers[this->af->get_attacked(arg)[i]] == 0 && !this->in.test(this->af->get_attacked(arg)[i]))
+      if(this->number_of_non_out_attackers[this->af->get_attacked(arg)[i]] == 0 && !this->in[this->af->get_attacked(arg)[i]])
         this->unattacked_and_not_in_arguments.push_back(this->af->get_attacked(arg)[i]);
      }
    }
@@ -90,12 +89,12 @@ namespace taas{
    * reset in
    */
    void taas::Labeling::reset_in(int arg){
-     if(!this->in.test(arg))
+     if(!this->in[arg])
       return;
-     this->in.reset(arg);
+     this->in[arg] = false;
      // check for conflict
-     if(this->out.test(arg)){
-       this->conflicts.reset(arg);
+     if(this->out[arg]){
+       this->conflicts[arg] = false;
        this->num_conflicts--;
      }
      for(int i = 0; i < this->af->get_attacked(arg).size(); i++)
@@ -107,20 +106,20 @@ namespace taas{
    * check whether this has implications and propagate further
    */
    void taas::Labeling::undo_attack(int arg, int decision_id){
-     if(!this->out.test(arg))
+     if(!this->out[arg])
       return;
-     if(this->decision_level[arg] != decision_id && !this->in.test(arg))
+     if(this->decision_level[arg] != decision_id && !this->in[arg])
       return;
-     this->out.reset(arg);
+     this->out[arg] = false;
      // check for conflict
-     if(this->in.test(arg)){
-       this->conflicts.reset(arg);
+     if(this->in[arg]){
+       this->conflicts[arg] = false;
        this->num_conflicts--;
      }
      if(this->decision_level[arg] == decision_id){
        for(int i = 0; i < this->af->get_attacked(arg).size(); i++){
         this->number_of_non_out_attackers[this->af->get_attacked(arg)[i]]++;
-        if(this->in.test(this->af->get_attacked(arg)[i]) && this->decision_level[this->af->get_attacked(arg)[i]] == decision_id)
+        if(this->in[this->af->get_attacked(arg)[i]] && this->decision_level[this->af->get_attacked(arg)[i]] == decision_id)
          this->not_unattacked_and_in_arguments.push_back(this->af->get_attacked(arg)[i]);
        }
      }
@@ -130,21 +129,21 @@ namespace taas{
    * is in?
    */
    bool taas::Labeling::is_in(int arg){
-     return this->in.test(arg);
+     return this->in[arg];
    }
 /* ============================================================================================================== */
   /*
    * is out?
    */
    bool taas::Labeling::is_out(int arg){
-     return this->out.test(arg);
+     return this->out[arg];
    }
 /* ============================================================================================================== */
   /*
    * is unset?
    */
    bool taas::Labeling::is_reset(int arg){
-     return this->in.test(arg) || this->out.test(arg);
+     return this->in[arg] || this->out[arg];
    }
 /* ============================================================================================================== */
   /*
@@ -189,7 +188,7 @@ namespace taas{
      cout << "IN={";
      bool is_first = true;
      for( int i  = 0; i < this->af->get_number_of_arguments() ; i++ )
-      if(this->in.test(i)){
+      if(this->in[i]){
         if(is_first)
           is_first = false;
         else
@@ -199,7 +198,7 @@ namespace taas{
      cout << "}, OUT={";
      is_first = true;
      for( int i  = 0; i < this->af->get_number_of_arguments() ; i++ )
-      if(this->out.test(i)){
+      if(this->out[i]){
        if(is_first)
            is_first = false;
          else
@@ -259,7 +258,7 @@ namespace taas{
      cout << "}, CONFLICTS={";
      is_first = true;
      for( int i  = 0; i < this->af->get_number_of_arguments() ; i++ ){
-       if(this->conflicts.test(i)){
+       if(this->conflicts[i]){
         if(is_first)
          is_first = false;
         else
@@ -277,7 +276,7 @@ namespace taas{
      cout << "[";
      bool is_first = true;
      for( int i  = 0; i < this->af->get_number_of_arguments() ; i++ )
-      if(this->in.test(i)){
+      if(this->in[i]){
         if(is_first)
           is_first = false;
         else

@@ -11,7 +11,6 @@
 */
 #include "taas_util.h"
 
-#include <boost/dynamic_bitset.hpp>
 #include <iostream>
 #include <vector>
 
@@ -39,10 +38,10 @@ namespace taas{
   /*
    * print some bitset with argument identifiers
    */
-   void print_arg_bitset(boost::dynamic_bitset<> & b, taas::Af& af){
-     bool is_first = true;
+   void print_arg_bitset(vector<bool> & b, taas::Af& af){
+  /*   bool is_first = true;
      cout << "[";
-     for( int a = 0; a < b.size(); a++ ){       
+     for( int a = 0; a < b.size(); a++ ){
        if(!b.test(a))
         continue;
        if(is_first)
@@ -51,7 +50,7 @@ namespace taas{
          cout << ",";
        cout << af.get_argument_name(a);
      }
-     cout << "]";
+     cout << "]";*/
    }
 /* ============================================================================================================== */
   /*

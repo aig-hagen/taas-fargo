@@ -12,7 +12,7 @@
 ============================================================================
 */
 
-#define DEBUG true
+//#define DEBUG true
 
 #include "taas_af.h"
 #include "taas_problem.h"
@@ -22,7 +22,6 @@
 #include "taas_util.h"
 #include "taas_fast_pqueue.h"
 
-#include <boost/dynamic_bitset.hpp>
 #include <map>
 #include <queue>
 #include <stack>
@@ -50,6 +49,7 @@ int solve(taas::Problem problem, map<string,string>& params, taas::Af& af, taas:
   taas::FastPriorityQueue * current_must_out;
   // arguments that must be turned OUT
   taas::FastPriorityQueue * must_out = new taas::FastPriorityQueue(af.get_number_of_arguments(),taas::ArgumentCompare(af,lab));
+  taas::FastPriorityQueue * bck_must_out;
   // arguments that have already been unsuccessfully shown to be IN
   //boost::dynamic_bitset<> not_in(af.get_number_of_arguments());
   vector<bool> not_in(af.get_number_of_arguments());
@@ -178,7 +178,7 @@ int solve(taas::Problem problem, map<string,string>& params, taas::Af& af, taas:
         continue;
       }
       // backup must_out
-      taas::FastPriorityQueue * bck_must_out = new taas::FastPriorityQueue(*must_out);
+      bck_must_out = new taas::FastPriorityQueue(*must_out);
       // check on attackers of arg
       bool loop_found = false;
       for(int a: af.get_attackers(current_arg))
@@ -186,7 +186,7 @@ int solve(taas::Problem problem, map<string,string>& params, taas::Af& af, taas:
           // special case: a is loop and not attacked otherwise
           if(af.is_loop(a) && af.get_attackers(a).size() == 1)
             loop_found = true;
-            must_out->add(a,current_arg);
+          must_out->add(a,current_arg);
         }
       #ifdef DEBUG
         cout << "Update MUST OUT:          ";
@@ -228,20 +228,16 @@ int solve(taas::Problem problem, map<string,string>& params, taas::Af& af, taas:
           // continue processing
           continue;
       }
-      // check whether we are finished
-      if(must_out->empty()){
-        cout << "YES" << endl;
-        return 0;
-      }
       // pick next argument from must_out
       // (also remove all arguments already shown to be OUT)
       do{
+        // check whether we are finished
+        if(must_out->empty()){
+          cout << "YES" << endl;
+          return 0;
+        }
         next_out = must_out->top_and_pop();
-      }while(lab.is_out(next_out) && !must_out->empty());
-      if(lab.is_out(next_out) && must_out->empty()){
-        cout << "YES" << endl;
-        return 0;
-      }
+      }while(lab.is_out(next_out));
       #ifdef DEBUG
         cout << endl;
         cout << "Next OUT selected:        " << af.get_argument_name(next_out) << endl;
@@ -272,7 +268,7 @@ int solve(taas::Problem problem, map<string,string>& params, taas::Af& af, taas:
 /* ============================================================================================================== */
 int main(int argc, char *argv[]){
   taas::Solver solver(
-    "taas-fargo v1.0.2 (2022-03-22)\nMatthias Thimm (matthias.thimm@fernuni-hagen.de)",
+    "taas-fargo v1.0.4 (2022-03-25)\nMatthias Thimm (matthias.thimm@fernuni-hagen.de)",
     {taas::Problem::DC_CO,taas::Problem::DC_PR},
     solve);
   return solver.execute(argc,argv);
