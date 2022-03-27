@@ -5,7 +5,7 @@
  ============================================================================
  Name        : taas-fargo.cpp
  Author      : Matthias Thimm
- Version     : 1.0
+ Version     : 1.0.7
  Copyright   : GPL3
  Description : The taas-fargo solver for abstract argumentation.
 
@@ -80,7 +80,7 @@ int solve(taas::Problem problem, map<string,string>& params, taas::Af& af, taas:
   int current_arg;
   // arguments that must be turned OUT
   taas::FastPriorityQueue must_out = taas::FastPriorityQueue(af.get_number_of_arguments(),must_out_compare);
-  must_out_compare.set_must_out(must_out);
+  must_out_compare.set_must_out(must_out);  
   // arguments that have already been unsuccessfully shown to be IN
   vector<bool> not_in(af.get_number_of_arguments());
   // arguments that are selected by the key argument to be tried next

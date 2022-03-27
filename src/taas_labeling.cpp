@@ -185,6 +185,8 @@ namespace taas{
    * get the decision level of the given argument
    */
    int taas::Labeling::get_decision_level(int arg){
+     if(arg < 0 || arg >= this->decision_level.size())
+      return 0;
      return this->decision_level[arg];
    }
 /* ============================================================================================================== */

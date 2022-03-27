@@ -39,10 +39,10 @@ namespace taas{
   /*
    * add
    */
-  void taas::FastPriorityQueue::add(int arg, int pred){
+  void taas::FastPriorityQueue::add(int arg, int pred){    
     this->b[arg] = true;
-    this->q.push(arg);
     this->pred[arg] = pred;
+    this->q.push(arg);
   }
 /* ============================================================================================================== */
   /*

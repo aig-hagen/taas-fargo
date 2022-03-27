@@ -45,7 +45,7 @@ namespace taas{
   bool taas::ArgumentCompare::operator()(int arg1, int arg2){
     if(this->dl_order != taas::OFF){
       // we only do pre-sorting by decision level for must_out arguments
-      // and compare the decision levels of their corresponding predecessors
+      // and compare the decision levels of their corresponding predecessors      
       if(this->lab->get_decision_level(this->must_out->get_pred(arg1)) < this->lab->get_decision_level(this->must_out->get_pred(arg2)))
         return this->dl_order == taas::ASC;
       else if(this->lab->get_decision_level(this->must_out->get_pred(arg1)) > this->lab->get_decision_level(this->must_out->get_pred(arg2)))
