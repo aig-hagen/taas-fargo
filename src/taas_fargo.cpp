@@ -31,9 +31,19 @@
 using namespace std;
 /* ============================================================================================================== */
 int solve(taas::Problem problem, map<string,string>& params, taas::Af& af, taas::Labeling& lab, int argument = -1){
+  // NOTE: lab contains initially the grounded labeling
+  // NOTE: we only solve DC-CO and DC-PR here
+  #ifdef DEBUG
+    cout << "Debugging on!" << endl;
+    cout << "Problem:  " << taas::problem_to_string(problem) << endl;
+    cout << "AF:       ";
+    af.print();
+    cout << "Argument: " << af.get_argument_name(argument) << endl << endl;
+  #endif
   // parse parameters
   taas::SortOrder order_defeaters;
   taas::SortOrder order_must_outs;
+  taas::SortByDecisionLevel dl_order;
   if(params.find("-sd") != params.end()){
     if(params["-sd"] == "asc_in")
       order_defeaters = taas::ASC_IN_DEGREE;
@@ -44,7 +54,7 @@ int solve(taas::Problem problem, map<string,string>& params, taas::Af& af, taas:
     else if(params["-sd"] == "desc_out")
       order_defeaters = taas::DESC_OUT_DEGREE;
     else order_defeaters = taas::NUMERICAL;
-  }else order_defeaters = taas::NUMERICAL;
+  }else order_defeaters = taas::DESC_IN_DEGREE;
   if(params.find("-sm") != params.end()){
     if(params["-sm"] == "asc_in")
       order_must_outs = taas::ASC_IN_DEGREE;
@@ -55,23 +65,22 @@ int solve(taas::Problem problem, map<string,string>& params, taas::Af& af, taas:
     else if(params["-sm"] == "desc_out")
       order_must_outs = taas::DESC_OUT_DEGREE;
     else order_must_outs = taas::NUMERICAL;
-  }else order_must_outs = taas::NUMERICAL;
-  taas::ArgumentCompare defeater_compare(af,lab,order_defeaters);
-  taas::ArgumentCompare must_out_compare(af,lab,order_must_outs);
-  #ifdef DEBUG
-    cout << "Debugging on!" << endl;
-    cout << "Problem:  " << taas::problem_to_string(problem) << endl;
-    cout << "AF:       ";
-    af.print();
-    cout << "Argument: " << af.get_argument_name(argument) << endl << endl;
-  #endif
-  // NOTE: lab contains initially the grounded labeling
-  // NOTE: we only solve DC-CO and DC-PR here
+  }else order_must_outs = taas::DESC_IN_DEGREE;
+  if(params.find("-sdl") != params.end()){
+    if(params["-sdl"] == "asc")
+      dl_order = taas::ASC;
+    else if(params["-sdl"] == "desc")
+      dl_order = taas::DESC;
+    else dl_order = taas::OFF;
+  }else dl_order = taas::OFF;
+  taas::ArgumentCompare defeater_compare(af,lab,order_defeaters,taas::OFF);
+  taas::ArgumentCompare must_out_compare(af,lab,order_must_outs,dl_order);
   // -- begin variables used in the main loop
   int next_out, tmp;
   int current_arg;
   // arguments that must be turned OUT
   taas::FastPriorityQueue must_out = taas::FastPriorityQueue(af.get_number_of_arguments(),must_out_compare);
+  must_out_compare.set_must_out(must_out);
   // arguments that have already been unsuccessfully shown to be IN
   vector<bool> not_in(af.get_number_of_arguments());
   // arguments that are selected by the key argument to be tried next
@@ -308,7 +317,7 @@ int solve(taas::Problem problem, map<string,string>& params, taas::Af& af, taas:
 /* ============================================================================================================== */
 int main(int argc, char *argv[]){
   taas::Solver solver(
-    "taas-fargo v1.0.6 (2022-03-25)\nMatthias Thimm (matthias.thimm@fernuni-hagen.de)",
+    "taas-fargo v1.0.7 (2022-03-27)\nMatthias Thimm (matthias.thimm@fernuni-hagen.de)",
     {taas::Problem::DC_CO,taas::Problem::DC_PR},
     solve);
   return solver.execute(argc,argv);

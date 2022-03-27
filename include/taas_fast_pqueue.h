@@ -19,7 +19,6 @@
 using namespace std;
 
 namespace taas{
-
   class FastPriorityQueue {
     private:
       vector<bool> b;

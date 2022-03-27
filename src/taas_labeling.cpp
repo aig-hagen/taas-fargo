@@ -182,6 +182,13 @@ namespace taas{
    }
 /* ============================================================================================================== */
   /*
+   * get the decision level of the given argument
+   */
+   int taas::Labeling::get_decision_level(int arg){
+     return this->decision_level[arg];
+   }
+/* ============================================================================================================== */
+  /*
    * the number of non-out parents of arg
    */
   int taas::Labeling::get_number_of_non_out_attackers(int arg){

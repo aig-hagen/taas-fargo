@@ -15,17 +15,22 @@
 #include "taas_labeling.h"
 
 namespace taas{
+  class FastPriorityQueue;
 
   enum SortOrder {NUMERICAL,ASC_IN_DEGREE,DESC_IN_DEGREE,ASC_OUT_DEGREE,DESC_OUT_DEGREE};
+  enum SortByDecisionLevel {OFF,ASC,DESC};
 
   class ArgumentCompare {
     private:
       taas::Af* af;
       taas::Labeling* lab;
       taas::SortOrder order;
+      taas::SortByDecisionLevel dl_order;
+      taas::FastPriorityQueue* must_out;
     public:
       ArgumentCompare();
-      ArgumentCompare(taas::Af& af, taas::Labeling& lab, taas::SortOrder order);
+      ArgumentCompare(taas::Af& af, taas::Labeling& lab, taas::SortOrder order, taas::SortByDecisionLevel dl_order);
+      void set_must_out(taas::FastPriorityQueue & must_out);
       bool operator()(int arg1, int arg2);
   };
 

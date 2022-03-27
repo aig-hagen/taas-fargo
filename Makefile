@@ -8,7 +8,7 @@ CFLAGS    = -Wall -Wno-parentheses -Wno-sign-compare -Wno-writable-strings -std=
 LFLAGS    = -Wall
 IFLAGS    = -I include
 
-$(TARGET): $(SRC_DIR)/taas_fargo.cpp $(BUILD_DIR)/taas_af.o $(BUILD_DIR)/taas_solver.o $(BUILD_DIR)/taas_problem.o $(BUILD_DIR)/taas_labeling.o $(BUILD_DIR)/taas_compare.o $(BUILD_DIR)/taas_util.o $(BUILD_DIR)/taas_fast_pqueue.o
+$(TARGET): $(SRC_DIR)/taas_fargo.cpp $(BUILD_DIR)/taas_af.o $(BUILD_DIR)/taas_solver.o $(BUILD_DIR)/taas_problem.o $(BUILD_DIR)/taas_labeling.o $(BUILD_DIR)/taas_fast_pqueue.o $(BUILD_DIR)/taas_compare.o $(BUILD_DIR)/taas_util.o
 	@echo "Building and linking" $(TARGET)
 	@$(CXX) $(CFLAGS) $(IFLAGS) $(SRC_DIR)/taas_fargo.cpp -o $(TARGET) $(BUILD_DIR)/taas_af.o $(BUILD_DIR)/taas_solver.o $(BUILD_DIR)/taas_problem.o $(BUILD_DIR)/taas_labeling.o $(BUILD_DIR)/taas_compare.o $(BUILD_DIR)/taas_util.o $(BUILD_DIR)/taas_fast_pqueue.o $(LFLAGS)
 
