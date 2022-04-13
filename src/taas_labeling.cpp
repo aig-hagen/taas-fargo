@@ -13,6 +13,7 @@
 #include "taas_af.h"
 
 #include <iostream>
+#include <queue>
 
 using namespace std;
 
@@ -47,20 +48,38 @@ namespace taas{
      if(this->in[arg])
       return;
      this->in[arg] = true;
-     // check for conflict
-     if(this->out[arg]){
-       if(!this->conflicts[arg]){
-         this->conflicts[arg] = true;
-         this->num_conflicts++;
-       }
-       return;
-     }
      if(inc_decision_id)
       this->decision_id++;
      this->decision_level[arg] = this->decision_id;
      for(int i = 0; i < this->af->get_attacked(arg).size(); i++)
       this->set_out(this->af->get_attacked(arg)[i]);
    }
+/* ============================================================================================================== */
+  /*
+   * conflict analysis
+   */
+  int taas::Labeling::conflict_analysis(int arg){
+    queue<int> q;
+    vector<bool> visited(this->af->get_number_of_arguments());
+    q.push(arg);
+    int largest_dl = this->decision_level[arg];
+    int second_largest_dl = this->decision_level[arg];
+    while(!q.empty()){
+      if(this->decision_level[q.front()] > largest_dl){
+        second_largest_dl = largest_dl;
+        largest_dl = this->decision_level[q.front()];
+      }else if(this->decision_level[q.front()] < largest_dl && this->decision_level[q.front()] > second_largest_dl){
+        second_largest_dl = this->decision_level[q.front()];
+      }
+      for(int a: this->af->get_attackers(q.front()))
+        if(!visited[a] && this->decision_level[a] != 0){
+          q.push(a);
+          visited[a] = true;
+        }
+      q.pop();
+    }
+    return second_largest_dl;
+  }
 /* ============================================================================================================== */
   /*
    * set out
@@ -74,6 +93,12 @@ namespace taas{
        if(!this->conflicts[arg]){
          this->conflicts[arg];
          this->num_conflicts++;
+         // TODO:
+        // if(this->conflict_analysis(arg) < this->decision_id)
+        //  cout << this->decision_id-this->conflict_analysis(arg) << "  "<<this->conflict_analysis(arg) << " " << this->decision_id << endl;
+         // do conflict analysis, simply by BFS in ancestor direction
+         // and determine the second to largest decision level, use
+         // that value to learn the conflict
        }
        return;
      }
@@ -88,10 +113,14 @@ namespace taas{
   /*
    * reset in
    */
-   void taas::Labeling::reset_in(int arg){
+   void taas::Labeling::reset_in(int arg, bool dec_decision_id){
      if(!this->in[arg])
       return;
      this->in[arg] = false;
+      if(dec_decision_id){
+       this->decision_id--;
+       //cout << ++num_c << endl;
+     }
      // check for conflict
      if(this->out[arg]){
        this->conflicts[arg] = false;
@@ -99,6 +128,7 @@ namespace taas{
      }
      for(int i = 0; i < this->af->get_attacked(arg).size(); i++)
       this->undo_attack(this->af->get_attacked(arg)[i], this->decision_level[arg]);
+     //this->decision_level[arg] = 0;
    }
 /* ============================================================================================================== */
   /*
@@ -122,6 +152,7 @@ namespace taas{
         if(this->in[this->af->get_attacked(arg)[i]] && this->decision_level[this->af->get_attacked(arg)[i]] == decision_id)
          this->not_unattacked_and_in_arguments.push_back(this->af->get_attacked(arg)[i]);
        }
+       //this->decision_level[arg] = 0;
      }
    }
 /* ============================================================================================================== */
@@ -169,7 +200,7 @@ namespace taas{
       return false;
      int arg = this->not_unattacked_and_in_arguments.back();
      this->not_unattacked_and_in_arguments.pop_back();
-     this->reset_in(arg);
+     this->reset_in(arg,false);
      return true;
    }
 /* ============================================================================================================== */

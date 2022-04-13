@@ -35,7 +35,8 @@ namespace taas{
       Labeling(taas::Af& af);
       void set_in(int arg,bool inc_decision_id = true);
       void set_out(int arg);
-      void reset_in(int arg);
+      int conflict_analysis(int arg);
+      void reset_in(int arg,bool dec_decision_id = true);
       void undo_attack(int arg, int decision_id);
       bool is_in(int arg);
       bool is_out(int arg);

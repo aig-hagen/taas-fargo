@@ -1,0 +1,3 @@
+./taas-fargo -p DC-CO -fo tgf -f /Users/mthimm/Documents/cs/misc/ICCMA17_Datasets/A/2/WS_200_28_50_70.tgf -a a2
+
+2022-03-31:  2.935.562  backtracking steps (in taas::Labeling::reset_in)
