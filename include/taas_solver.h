@@ -28,6 +28,7 @@ namespace taas{
         int(*solve_function)(taas::Problem,map<string,string>&,taas::Af&,taas::Labeling&,int);
         taas::Af parse_tgf(ifstream& file);
         taas::Af parse_apx(ifstream& file);
+        taas::Af parse_i23(ifstream& file);
       public:
         Solver(string version_info, vector<taas::Problem> supported_problems, int (*solve_function)(taas::Problem,map<string,string>&,taas::Af&,taas::Labeling&,int));
         int execute(int argc, char *argv[]);

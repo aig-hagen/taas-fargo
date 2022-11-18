@@ -75,6 +75,11 @@ int solve(taas::Problem problem, map<string,string>& params, taas::Af& af, taas:
   }else dl_order = taas::OFF;
   taas::ArgumentCompare defeater_compare(af,lab,order_defeaters,taas::OFF);
   taas::ArgumentCompare must_out_compare(af,lab,order_must_outs,dl_order);
+  // for approximate reasoning: the maximum number of iterations of the main loop
+  int limit = -1;
+  if(params.find("-limit") != params.end()){
+    limit = std::stoi(params["-limit"]) * af.get_number_of_arguments();
+  }
   // -- begin variables used in the main loop
   int next_out, tmp;
   int current_arg;
@@ -96,7 +101,9 @@ int solve(taas::Problem problem, map<string,string>& params, taas::Af& af, taas:
   // add argument under consideration
   s_arg.push(argument);
   // main loop
-  while(!s_arg.empty()){
+  int iteration = 0;
+  while(!s_arg.empty() && (limit == -1 || iteration < limit)){
+    iteration++;
     #ifdef DEBUG
       cout << "================================================================" << endl;
       cout << "Main loop begin" << endl;
@@ -317,7 +324,7 @@ int solve(taas::Problem problem, map<string,string>& params, taas::Af& af, taas:
 /* ============================================================================================================== */
 int main(int argc, char *argv[]){
   taas::Solver solver(
-    "taas-fargo v1.0.7 (2022-03-27)\nMatthias Thimm (matthias.thimm@fernuni-hagen.de)",
+    "taas-fargo v1.0.8 (2022-11-18)\nMatthias Thimm (matthias.thimm@fernuni-hagen.de)",
     {taas::Problem::DC_CO,taas::Problem::DC_PR},
     solve);
   return solver.execute(argc,argv);

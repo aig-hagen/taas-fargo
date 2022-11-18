@@ -53,7 +53,7 @@ namespace taas{
 	  }
     // parse parameters
     //char *file_name = NULL, *file_format = NULL, *argument = NULL;
-    string file_name = "", file_format = "", argument = "";
+    string file_name = "", file_format = "i23", argument = "";
     map<string,string> params;
     taas::Problem problem;
     bool problem_specified = false;
@@ -77,7 +77,7 @@ namespace taas{
       }
       // for the parameter "--formats" print out the formats and exit
       if(strcmp(argv[i],"--formats") == 0){
-        cout << "[tgf,apx]" << endl;
+        cout << "[tgf,apx,i23]" << endl;
         return 0;
       }
       // for the parameter "--problems" print out the problems and exit
@@ -98,15 +98,11 @@ namespace taas{
       cout << "File specification is missing (parameter '-f')" << endl;
       return 1;
     }
-    if( file_format == "" ){
-      cout << "File format specification is missing (parameter '-fo')" << endl;
-      return 1;
-    }
     if(find(this->supported_problems.begin(), this->supported_problems.end(), problem) == this->supported_problems.end()){
       cout << "Problem not supported by this solver" << endl;
       return 1;
     }
-    if(file_format != "apx" && file_format != "tgf"){
+    if(file_format != "apx" && file_format != "tgf" && file_format != "i23"){
       cout << "File format not supported by this solver" << endl;
       return 1;
     }
@@ -119,8 +115,9 @@ namespace taas{
     taas::Af af;
     if( file_format == "tgf" )
       af = parse_tgf(file);
-    else
+    else if( file_format == "apx" )
       af = parse_apx(file);
+    else af = parse_i23(file);
     file.close();
     int arg_idx = -1;
     if(taas::is_decision_problem(problem))
@@ -246,6 +243,33 @@ namespace taas{
       }
     }
     return af;
+  }
+/* ============================================================================================================== */
+  /*
+   * parse_i23: parse i23 file into an AF
+   */
+  taas::Af taas::Solver::parse_i23(ifstream& file){
+      taas::Af af;
+      string line;
+      string argument, attacker, attacked;
+      while (getline(file, line)) {
+        boost::algorithm::trim(line);
+        if(line.rfind("p af", 0) == 0) {
+          int num_arguments = std::stoi(line.substr(4,line.length()));
+          for(int i = 1; i <= num_arguments; i++){
+            af.add_argument(std::to_string(i));
+          }
+        }else if(line.rfind("#", 0) == 0){
+          // skip comment
+        }else{
+          attacker = line.substr(0,line.find(" ",0));
+          attacked = line.substr(line.find(" ",0)+1,line.length());
+          boost::algorithm::trim(attacker);
+          boost::algorithm::trim(attacked);
+          af.add_attack(attacker,attacked);
+        }
+      }
+      return af;
   }
 /* ============================================================================================================== */
 }
