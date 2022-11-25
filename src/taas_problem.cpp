@@ -49,8 +49,32 @@ namespace taas{
       return DC_ST;
     if(problem == "SE-ST")
       return SE_ST;
-    //if(problem == "EE-ST")
-    return EE_ST;
+    if(problem == "EE-ST")
+      return EE_ST;
+    if(problem == "DS-SST")
+      return DS_SST;
+    if(problem == "DC-SST")
+      return DC_SST;
+    if(problem == "SE-SST")
+      return SE_SST;
+    if(problem == "EE-SST")
+      return EE_SST;
+    if(problem == "DS-STG")
+      return DS_STG;
+    if(problem == "DC-STG")
+      return DC_STG;
+    if(problem == "SE-STG")
+      return SE_STG;
+    if(problem == "EE-STG")
+      return EE_STG;
+    if(problem == "DS-ID")
+      return DS_ID;
+    if(problem == "DC-ID")
+      return DC_ID;
+    if(problem == "SE-ID")
+      return SE_ID;
+    //if(problem == "EE-ID")
+    return EE_ID;
   }
 /* ============================================================================================================== */
   string problem_to_string(taas::Problem problem){
@@ -84,8 +108,32 @@ namespace taas{
       return "DC-ST";
     if(problem == SE_ST)
       return "SE-ST";
-    //if(problem == EE_ST)
-    return "EE-ST";
+    if(problem == EE_ST)
+      return "EE-ST";
+    if(problem == DS_SST)
+      return "DS-SST";
+    if(problem == DC_SST)
+      return "DC-SST";
+    if(problem == SE_SST)
+      return "SE-SST";
+    if(problem == EE_SST)
+      return "EE-SST";
+    if(problem == DS_STG)
+      return "DS-STG";
+    if(problem == DC_STG)
+      return "DC-STG";
+    if(problem == SE_STG)
+      return "SE-STG";
+    if(problem == EE_STG)
+      return "EE-STG";
+    if(problem == DS_ID)
+      return "DS-ID";
+    if(problem == DC_ID)
+      return "DC-ID";
+    if(problem == SE_ID)
+      return "SE-ID";
+    //if(problem == EE_ID)
+    return "EE-ID";
   }
 /* ============================================================================================================== */
   string problems_to_string(vector<taas::Problem> problems){
@@ -111,7 +159,13 @@ namespace taas{
       case DS_PR:
       case DC_PR:
       case DS_ST:
-      case DC_ST: return true;
+      case DC_ST:
+      case DS_SST:
+      case DC_SST:
+      case DS_STG:
+      case DC_STG:
+      case DS_ID:
+      case DC_ID: return true;
       default   : return false;
     }
   }

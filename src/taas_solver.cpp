@@ -57,22 +57,29 @@ namespace taas{
     map<string,string> params;
     taas::Problem problem;
     bool problem_specified = false;
+    // if additional flags are set but nothing else, still
+    // provide just the version info
+    bool provide_version_info = true;
     for(int i = 1; i < argc; i++){
       if(strcmp(argv[i],"-p") == 0){
           problem = taas::string_to_problem(argv[++i]);
           problem_specified = true;
+          provide_version_info = false;
           continue;
       }
       if(strcmp(argv[i],"-f") == 0){
          file_name = argv[++i];
+         provide_version_info = false;
          continue;
       }
       if(strcmp(argv[i],"-a") == 0){
          argument = argv[++i];
+         provide_version_info = false;
         continue;
       }
       if(strcmp(argv[i],"-fo") == 0){
          file_format = argv[++i];
+         provide_version_info = false;
         continue;
       }
       // for the parameter "--formats" print out the formats and exit
@@ -90,6 +97,10 @@ namespace taas{
       i++;
     }
     // check for issues with the parameters
+    if( provide_version_info ){
+      cout << this->version_info << endl;
+		  return 0;
+    }
     if( !problem_specified ){
       cout << "Problem specification is missing (parameter '-p')" << endl;
       return 1;

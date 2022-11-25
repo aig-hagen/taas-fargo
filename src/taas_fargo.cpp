@@ -30,56 +30,9 @@
 
 using namespace std;
 /* ============================================================================================================== */
-int solve(taas::Problem problem, map<string,string>& params, taas::Af& af, taas::Labeling& lab, int argument = -1){
-  // NOTE: lab contains initially the grounded labeling
-  // NOTE: we only solve DC-CO and DC-PR here
-  #ifdef DEBUG
-    cout << "Debugging on!" << endl;
-    cout << "Problem:  " << taas::problem_to_string(problem) << endl;
-    cout << "AF:       ";
-    af.print();
-    cout << "Argument: " << af.get_argument_name(argument) << endl << endl;
-  #endif
-  // parse parameters
-  taas::SortOrder order_defeaters;
-  taas::SortOrder order_must_outs;
-  taas::SortByDecisionLevel dl_order;
-  if(params.find("-sd") != params.end()){
-    if(params["-sd"] == "asc_in")
-      order_defeaters = taas::ASC_IN_DEGREE;
-    else if(params["-sd"] == "desc_in")
-      order_defeaters = taas::DESC_IN_DEGREE;
-    else if(params["-sd"] == "asc_out")
-      order_defeaters = taas::ASC_OUT_DEGREE;
-    else if(params["-sd"] == "desc_out")
-      order_defeaters = taas::DESC_OUT_DEGREE;
-    else order_defeaters = taas::NUMERICAL;
-  }else order_defeaters = taas::DESC_IN_DEGREE;
-  if(params.find("-sm") != params.end()){
-    if(params["-sm"] == "asc_in")
-      order_must_outs = taas::ASC_IN_DEGREE;
-    else if(params["-sm"] == "desc_in")
-      order_must_outs = taas::DESC_IN_DEGREE;
-    else if(params["-sm"] == "asc_out")
-      order_must_outs = taas::ASC_OUT_DEGREE;
-    else if(params["-sm"] == "desc_out")
-      order_must_outs = taas::DESC_OUT_DEGREE;
-    else order_must_outs = taas::NUMERICAL;
-  }else order_must_outs = taas::DESC_IN_DEGREE;
-  if(params.find("-sdl") != params.end()){
-    if(params["-sdl"] == "asc")
-      dl_order = taas::ASC;
-    else if(params["-sdl"] == "desc")
-      dl_order = taas::DESC;
-    else dl_order = taas::OFF;
-  }else dl_order = taas::OFF;
-  taas::ArgumentCompare defeater_compare(af,lab,order_defeaters,taas::OFF);
-  taas::ArgumentCompare must_out_compare(af,lab,order_must_outs,dl_order);
-  // for approximate reasoning: the maximum number of iterations of the main loop
-  int limit = -1;
-  if(params.find("-limit") != params.end()){
-    limit = std::stoi(params["-limit"]) * af.get_number_of_arguments();
-  }
+// main solving method: checks whether the given argument is contained in an
+// admissible set
+int is_acceptable(taas::Af& af, taas::Labeling& lab, int argument,taas::ArgumentCompare defeater_compare,taas::ArgumentCompare must_out_compare,int limit){
   // -- begin variables used in the main loop
   int next_out, tmp;
   int current_arg;
@@ -285,8 +238,7 @@ int solve(taas::Problem problem, map<string,string>& params, taas::Af& af, taas:
       do{
         // check whether we are finished
         if(must_out.empty()){
-          cout << "YES" << endl;
-          return 0;
+          return 1;
         }
         next_out = must_out.top_and_pop();
         must_out_add.push_back(next_out);
@@ -318,14 +270,98 @@ int solve(taas::Problem problem, map<string,string>& params, taas::Af& af, taas:
     }
   }
   // if we end up here, no admissible set could be found
-  cout << "NO" << endl;
+  return 0;
+}
+/* ============================================================================================================== */
+int solve(taas::Problem problem, map<string,string>& params, taas::Af& af, taas::Labeling& lab, int argument = -1){
+  // NOTE: lab contains initially the grounded labeling
+  // NOTE: we only solve DC-CO and DC-PR here
+  #ifdef DEBUG
+    cout << "Debugging on!" << endl;
+    cout << "Problem:  " << taas::problem_to_string(problem) << endl;
+    cout << "AF:       ";
+    af.print();
+    cout << "Argument: " << af.get_argument_name(argument) << endl << endl;
+  #endif
+  // parse parameters
+  taas::SortOrder order_defeaters;
+  taas::SortOrder order_must_outs;
+  taas::SortByDecisionLevel dl_order;
+  if(params.find("-sd") != params.end()){
+    if(params["-sd"] == "asc_in")
+      order_defeaters = taas::ASC_IN_DEGREE;
+    else if(params["-sd"] == "desc_in")
+      order_defeaters = taas::DESC_IN_DEGREE;
+    else if(params["-sd"] == "asc_out")
+      order_defeaters = taas::ASC_OUT_DEGREE;
+    else if(params["-sd"] == "desc_out")
+      order_defeaters = taas::DESC_OUT_DEGREE;
+    else order_defeaters = taas::NUMERICAL;
+  }else order_defeaters = taas::DESC_IN_DEGREE;
+  if(params.find("-sm") != params.end()){
+    if(params["-sm"] == "asc_in")
+      order_must_outs = taas::ASC_IN_DEGREE;
+    else if(params["-sm"] == "desc_in")
+      order_must_outs = taas::DESC_IN_DEGREE;
+    else if(params["-sm"] == "asc_out")
+      order_must_outs = taas::ASC_OUT_DEGREE;
+    else if(params["-sm"] == "desc_out")
+      order_must_outs = taas::DESC_OUT_DEGREE;
+    else order_must_outs = taas::NUMERICAL;
+  }else order_must_outs = taas::DESC_IN_DEGREE;
+  if(params.find("-sdl") != params.end()){
+    if(params["-sdl"] == "asc")
+      dl_order = taas::ASC;
+    else if(params["-sdl"] == "desc")
+      dl_order = taas::DESC;
+    else dl_order = taas::OFF;
+  }else dl_order = taas::OFF;
+  taas::ArgumentCompare defeater_compare(af,lab,order_defeaters,taas::OFF);
+  taas::ArgumentCompare must_out_compare(af,lab,order_must_outs,dl_order);
+  // for approximate reasoning: the maximum number of iterations of the main loop
+  int limit = -1;
+  if(params.find("-limit") != params.end()){
+    limit = std::stoi(params["-limit"]) * af.get_number_of_arguments();
+  }
+  // support of tasks other than taas::Problem::DC_CO,taas::Problem::DC_PR is
+  // only for the non-approximate version
+  if( limit == -1 && (problem != taas::Problem::DC_CO && problem != taas::Problem::DC_PR)){
+      cout << "The problem " << taas::problem_to_string(problem) << " is only supported by the approximate version of this solver (flag '-limit' must be set to value other than -1)" << endl;
+      exit(0);
+  }
+  if(problem == taas::Problem::DC_CO || problem == taas::Problem::DC_PR || problem == taas::Problem::DC_ST || problem == taas::Problem::DC_SST || problem == taas::Problem::DC_STG){
+    // for credulous reasoning other than ID, check whether the argument is contained
+    // in an admissible set
+    if(is_acceptable(af,lab,argument,defeater_compare,must_out_compare,limit))
+        cout << "YES" << endl;
+      else
+        cout << "NO" << endl;
+  }else{
+    // for skeptical reasoning and DC-ID, check in addition whether any attacker
+    // of the argument is contained in an admissible set
+    // copy lab
+    taas::Labeling lab_copy = taas::Labeling(lab);
+    if(!is_acceptable(af,lab_copy,argument,defeater_compare,must_out_compare,limit))
+      cout << "NO" << endl;
+    else{
+      for(int a: af.get_attackers(argument)){
+        lab_copy = taas::Labeling(lab);
+        if(is_acceptable(af,lab_copy,a,defeater_compare,must_out_compare,limit)){
+          cout << "NO" << endl;
+          return 0;
+        }
+      }
+      cout << "YES" << endl;
+    }
+  }
   return 0;
 }
 /* ============================================================================================================== */
 int main(int argc, char *argv[]){
+  // only taas::Problem::DC_CO,taas::Problem::DC_PR are supported by the non-approximate version
   taas::Solver solver(
-    "taas-fargo v1.0.8 (2022-11-18)\nMatthias Thimm (matthias.thimm@fernuni-hagen.de)",
-    {taas::Problem::DC_CO,taas::Problem::DC_PR},
+    "taas-fargo v1.1.0 (2022-11-25)\nMatthias Thimm (matthias.thimm@fernuni-hagen.de)",
+    {taas::Problem::DC_CO,taas::Problem::DC_PR,taas::Problem::DC_ST,taas::Problem::DC_SST,taas::Problem::DC_STG,taas::Problem::DC_ID,taas::Problem::DS_CO,taas::Problem::DS_PR,taas::Problem::DS_ST,taas::Problem::DS_SST,taas::Problem::DS_STG,taas::Problem::DS_ID},
     solve);
   return solver.execute(argc,argv);
 }

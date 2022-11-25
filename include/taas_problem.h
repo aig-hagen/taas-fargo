@@ -34,7 +34,19 @@ namespace taas{
     DS_ST = 13,
     DC_ST = 14,
     SE_ST = 15,
-    EE_ST = 16
+    EE_ST = 16,
+    DS_SST = 17,
+    DC_SST = 18,
+    SE_SST = 19,
+    EE_SST = 20,
+    DS_STG = 21,
+    DC_STG = 22,
+    SE_STG = 23,
+    EE_STG = 24,
+    DS_ID = 25,
+    DC_ID = 26,
+    SE_ID = 27,
+    EE_ID = 28
   };
 
   Problem string_to_problem(string problem);
