@@ -20,3 +20,7 @@ ICCMA23 format use
 ```
   taas-fargo -p DC-PR -fo i23 -f <file in ICCMA23 format> -a <argument>
 ```
+For using the approximative version taas-fargo-limited, use the taas-fargo-limited.sh shell skript via, e.g.
+```
+  taas-fargo-limited.sh -p DC-PR -fo i23 -f <file in ICCMA23 format> -a <argument>
+```

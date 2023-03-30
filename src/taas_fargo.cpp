@@ -360,8 +360,9 @@ int solve(taas::Problem problem, map<string,string>& params, taas::Af& af, taas:
 int main(int argc, char *argv[]){
   // only taas::Problem::DC_CO,taas::Problem::DC_PR are supported by the non-approximate version
   taas::Solver solver(
-    "taas-fargo v1.1.0 (2022-11-25)\nMatthias Thimm (matthias.thimm@fernuni-hagen.de)",
-    {taas::Problem::DC_CO,taas::Problem::DC_PR,taas::Problem::DC_ST,taas::Problem::DC_SST,taas::Problem::DC_STG,taas::Problem::DC_ID,taas::Problem::DS_CO,taas::Problem::DS_PR,taas::Problem::DS_ST,taas::Problem::DS_SST,taas::Problem::DS_STG,taas::Problem::DS_ID},
+    "taas-fargo v1.1.1 (2023-03-23)\nMatthias Thimm (matthias.thimm@fernuni-hagen.de)",
+    {taas::Problem::DC_CO,taas::Problem::DC_PR,taas::Problem::DC_ST,taas::Problem::DC_SST,taas::Problem::DC_STG,taas::Problem::DC_ID,taas::Problem::DS_CO,taas::Problem::DS_PR,taas::Problem::DS_ST,taas::Problem::DS_SST,taas::Problem::DS_STG,taas::Problem::DS_ID,taas::Problem::DS_GR,taas::Problem::DC_GR},
+
     solve);
   return solver.execute(argc,argv);
 }
