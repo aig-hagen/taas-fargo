@@ -324,10 +324,22 @@ int solve(taas::Problem problem, map<string,string>& params, taas::Af& af, taas:
     limit = std::stoi(params["-limit"]) * af.get_number_of_arguments();
   }
   // support of tasks other than taas::Problem::DC_CO,taas::Problem::DC_PR is
-  // only for the non-approximate version
+  // only for the approximate version
   if( limit == -1 && (problem != taas::Problem::DC_CO && problem != taas::Problem::DC_PR)){
       cout << "The problem " << taas::problem_to_string(problem) << " is only supported by the approximate version of this solver (flag '-limit' must be set to value other than -1)" << endl;
       exit(0);
+  }
+  // for the approximate version and decision problems with stable semantics:
+  // if query argument is in the grounded extension (or attacked by it)
+  // then answer is automatically Yes (No) (no further existence checking is done)
+  if(problem == taas::Problem::DC_ST || problem == taas::Problem::DS_ST){
+    if(lab.is_in(argument)){
+      cout << "YES" << endl;
+      return 0;
+    }else if(lab.is_out(argument)){
+      cout << "NO" << endl;
+      return 0;
+    }
   }
   if(problem == taas::Problem::DC_CO || problem == taas::Problem::DC_PR || problem == taas::Problem::DC_ST || problem == taas::Problem::DC_SST || problem == taas::Problem::DC_STG){
     // for credulous reasoning other than ID, check whether the argument is contained
@@ -360,7 +372,7 @@ int solve(taas::Problem problem, map<string,string>& params, taas::Af& af, taas:
 int main(int argc, char *argv[]){
   // only taas::Problem::DC_CO,taas::Problem::DC_PR are supported by the non-approximate version
   taas::Solver solver(
-    "taas-fargo v1.1.1 (2023-03-23)\nMatthias Thimm (matthias.thimm@fernuni-hagen.de)",
+    "taas-fargo v1.1.2 (2023-06-21)\nMatthias Thimm (matthias.thimm@fernuni-hagen.de)",
     {taas::Problem::DC_CO,taas::Problem::DC_PR,taas::Problem::DC_ST,taas::Problem::DC_SST,taas::Problem::DC_STG,taas::Problem::DC_ID,taas::Problem::DS_CO,taas::Problem::DS_PR,taas::Problem::DS_ST,taas::Problem::DS_SST,taas::Problem::DS_STG,taas::Problem::DS_ID,taas::Problem::DS_GR,taas::Problem::DC_GR},
 
     solve);
