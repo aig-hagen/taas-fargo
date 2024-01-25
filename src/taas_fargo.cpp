@@ -321,7 +321,7 @@ int solve(taas::Problem problem, map<string,string>& params, taas::Af& af, taas:
   // for approximate reasoning: the maximum number of iterations of the main loop
   int limit = -1;
   if(params.find("-limit") != params.end()){
-    limit = std::stoi(params["-limit"]) * af.get_number_of_arguments();
+    limit = std::stoi(params["-limit"]) * sqrt(af.get_number_of_arguments());
   }
   // support of tasks other than taas::Problem::DC_CO,taas::Problem::DC_PR is
   // only for the approximate version
@@ -332,7 +332,8 @@ int solve(taas::Problem problem, map<string,string>& params, taas::Af& af, taas:
   // for the approximate version and decision problems with stable semantics:
   // if query argument is in the grounded extension (or attacked by it)
   // then answer is automatically Yes (No) (no further existence checking is done)
-  if(problem == taas::Problem::DC_ST || problem == taas::Problem::DS_ST){
+  // NOTE: for other semantics, this is already checked before
+  if( limit != -1 && (problem == taas::Problem::DC_ST || problem == taas::Problem::DS_ST)){
     if(lab.is_in(argument)){
       cout << "YES" << endl;
       return 0;
@@ -352,13 +353,16 @@ int solve(taas::Problem problem, map<string,string>& params, taas::Af& af, taas:
     // for skeptical reasoning and DC-ID, check in addition whether any attacker
     // of the argument is contained in an admissible set
     // copy lab
+    // distribute "limit" accordingly to all calls, where
+    // the first call gets half the resources
     taas::Labeling lab_copy = taas::Labeling(lab);
-    if(!is_acceptable(af,lab_copy,argument,defeater_compare,must_out_compare,limit))
+    if(!is_acceptable(af,lab_copy,argument,defeater_compare,must_out_compare,limit/2))
       cout << "NO" << endl;
     else{
+      int limit_att = limit/2/af.get_number_of_attackers()[argument];
       for(int a: af.get_attackers(argument)){
         lab_copy = taas::Labeling(lab);
-        if(is_acceptable(af,lab_copy,a,defeater_compare,must_out_compare,limit)){
+        if(is_acceptable(af,lab_copy,a,defeater_compare,must_out_compare,limit_att)){
           cout << "NO" << endl;
           return 0;
         }
@@ -372,9 +376,8 @@ int solve(taas::Problem problem, map<string,string>& params, taas::Af& af, taas:
 int main(int argc, char *argv[]){
   // only taas::Problem::DC_CO,taas::Problem::DC_PR are supported by the non-approximate version
   taas::Solver solver(
-    "taas-fargo v1.1.2 (2023-06-21)\nMatthias Thimm (matthias.thimm@fernuni-hagen.de)",
-    {taas::Problem::DC_CO,taas::Problem::DC_PR,taas::Problem::DC_ST,taas::Problem::DC_SST,taas::Problem::DC_STG,taas::Problem::DC_ID,taas::Problem::DS_CO,taas::Problem::DS_PR,taas::Problem::DS_ST,taas::Problem::DS_SST,taas::Problem::DS_STG,taas::Problem::DS_ID,taas::Problem::DS_GR,taas::Problem::DC_GR},
-
+    "taas-fargo v1.1.3 (2024-01-25)\nMatthias Thimm (matthias.thimm@fernuni-hagen.de)",
+    {taas::Problem::DC_CO,taas::Problem::DC_PR,taas::Problem::DC_ST,taas::Problem::DC_SST,taas::Problem::DC_STG,taas::Problem::DC_ID,taas::Problem::DS_CO,taas::Problem::DS_PR,taas::Problem::DS_ST,taas::Problem::DS_SST,taas::Problem::DS_STG,taas::Problem::DS_ID,taas::Problem::DS_GR,taas::Problem::DC_GR,taas::Problem::SE_GR,taas::Problem::EE_GR,taas::Problem::SE_CO},
     solve);
   return solver.execute(argc,argv);
 }
