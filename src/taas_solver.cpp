@@ -129,7 +129,7 @@ namespace taas{
     else if( file_format == "apx" )
       af = parse_apx(file);
     else af = parse_i23(file);
-    file.close();
+    file.close();    
     int arg_idx = -1;
     if(taas::is_decision_problem(problem))
       if(argument == ""){

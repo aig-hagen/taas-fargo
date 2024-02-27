@@ -274,6 +274,84 @@ int is_acceptable(taas::Af& af, taas::Labeling& lab, int argument,taas::Argument
   return 0;
 }
 /* ============================================================================================================== */
+// main solving method (alternate version): checks whether the given argument is contained in an
+// admissible set
+// returns 1 if acceptability has been confirmed,
+//         0 if non-acceptability has been confirmed,
+//        -1 if limit ran out.
+int is_acceptable_alt(taas::Af& af, taas::Labeling& lab, int argument,int limit){
+  // check for obvious conflict
+  if(lab.is_out(argument))
+    return 0;
+  taas::Labeling lab_copy = taas::Labeling(lab);
+  // add argument
+  lab_copy.set_in(argument);
+  // propagate information
+  while(lab_copy.faf())
+    ;
+  //check for further conflicts
+  if(lab_copy.has_conflict())
+    return 0;
+  // check for admissibility and check for arguments not yet out but supposed to be out
+  // only have to check for illegal in-labeled arguments
+  int must_out = -1;
+  for(int a = 0; a < af.get_number_of_arguments(); a++ ){
+    if(lab_copy.is_in(a)){
+      for(int b_idx = 0; b_idx < af.get_attackers(a).size(); b_idx++)
+        if(!lab_copy.is_out(af.get_attackers(a)[b_idx])){
+          must_out = af.get_attackers(a)[b_idx];
+          break;
+        }
+      if(must_out != -1)
+        break;
+    }
+  }
+  // is admissible?
+  if(must_out == -1)
+    return 1;
+  // check if we reached the search depth
+  if(limit == 0)
+    return -1;
+  // check for defenders
+  bool limit_reached = false;
+  for(int c_idx = 0; c_idx < af.get_attackers(must_out).size(); c_idx++){
+      int c = af.get_attackers(must_out)[c_idx];
+      if(limit == -1){
+        int val = is_acceptable_alt(af,lab_copy,c,limit);
+        if(val == 1)
+          return 1;
+        else if (val == -1)
+          limit_reached = true;
+      }else{
+        int val = is_acceptable_alt(af,lab_copy,c,limit-1);
+        if(val == 1)
+          return 1;
+        else if (val == -1)
+          limit_reached = true;
+      }
+  }
+  return limit_reached ? -1 : 0;
+}
+
+int is_acceptable_alt(taas::Af& af, taas::Labeling& lab, int argument,int limit,int idfs){
+  if(idfs == 0)
+    return is_acceptable_alt(af,lab,argument,limit) <= 0 ? 0 : 1;
+  else{
+    // if we are not doing approximate reasoning, set limit to number of arguments
+    limit = af.get_number_of_arguments();
+    for(int limit_actual = 0; limit_actual <= limit; limit_actual++){
+      int val = is_acceptable_alt(af,lab,argument,limit_actual);
+      if(val == 1)
+        return 1;
+      // if the reason of non-acceptability not due to limit reach, then return false
+      if(val == 0)
+        return 0;
+    }
+    return 0;
+  }
+}
+
+/* ============================================================================================================== */
 int solve(taas::Problem problem, map<string,string>& params, taas::Af& af, taas::Labeling& lab, int argument = -1){
   // NOTE: lab contains initially the grounded labeling
   // NOTE: we only solve DC-CO and DC-PR here
@@ -319,10 +397,23 @@ int solve(taas::Problem problem, map<string,string>& params, taas::Af& af, taas:
   }else dl_order = taas::OFF;
   taas::ArgumentCompare defeater_compare(af,lab,order_defeaters,taas::OFF);
   taas::ArgumentCompare must_out_compare(af,lab,order_must_outs,dl_order);
+  // mode = 0 original version, mode = 1 alternate version (which implies different
+  // interpretation of limit)
+  int mode = 0;
+  if(params.find("-mode") != params.end()){
+    mode = std::stoi(params["-mode"]);
+  }
   // for approximate reasoning: the maximum number of iterations of the main loop
   int limit = -1;
   if(params.find("-limit") != params.end()){
-    limit = std::stoi(params["-limit"]) * sqrt(af.get_number_of_arguments());
+    if(mode == 0)
+      limit = std::stoi(params["-limit"]) * sqrt(af.get_number_of_arguments());
+    else limit = std::stoi(params["-limit"]);
+  }
+  // iterative deepening? only used when mode==1
+  int idfs = 0;
+  if(params.find("-idfs") != params.end()){
+    idfs = std::stoi(params["-idfs"]);
   }
   // support of tasks other than taas::Problem::DC_CO,taas::Problem::DC_PR is
   // only for the approximate version
@@ -346,29 +437,54 @@ int solve(taas::Problem problem, map<string,string>& params, taas::Af& af, taas:
   if(problem == taas::Problem::DC_CO || problem == taas::Problem::DC_PR || problem == taas::Problem::DC_ST || problem == taas::Problem::DC_SST || problem == taas::Problem::DC_STG){
     // for credulous reasoning other than ID, check whether the argument is contained
     // in an admissible set
-    if(is_acceptable(af,lab,argument,defeater_compare,must_out_compare,limit))
-        cout << "YES" << endl;
-      else
-        cout << "NO" << endl;
+    if(mode == 0){
+      if(is_acceptable(af,lab,argument,defeater_compare,must_out_compare,limit))
+          cout << "YES" << endl;
+        else
+          cout << "NO" << endl;
+    }else{
+      if(is_acceptable_alt(af,lab,argument,limit,idfs))
+          cout << "YES" << endl;
+        else
+          cout << "NO" << endl;
+    }
   }else{
     // for skeptical reasoning and DC-ID, check in addition whether any attacker
     // of the argument is contained in an admissible set
-    // copy lab
-    // distribute "limit" accordingly to all calls, where
-    // the first call gets half the resources
-    taas::Labeling lab_copy = taas::Labeling(lab);
-    if(!is_acceptable(af,lab_copy,argument,defeater_compare,must_out_compare,limit/2))
-      cout << "NO" << endl;
-    else{
-      int limit_att = limit/2/af.get_number_of_attackers()[argument];
-      for(int a: af.get_attackers(argument)){
-        lab_copy = taas::Labeling(lab);
-        if(is_acceptable(af,lab_copy,a,defeater_compare,must_out_compare,limit_att)){
-          cout << "NO" << endl;
-          return 0;
+    if(mode == 0){
+      // copy lab
+      // distribute "limit" accordingly to all calls, where
+      // the first call gets half the resources
+      taas::Labeling lab_copy = taas::Labeling(lab);
+      if(!is_acceptable(af,lab_copy,argument,defeater_compare,must_out_compare,limit/2))
+        cout << "NO" << endl;
+      else{
+        int limit_att = limit/2/af.get_number_of_attackers()[argument];
+        for(int a: af.get_attackers(argument)){
+          lab_copy = taas::Labeling(lab);
+          if(is_acceptable(af,lab_copy,a,defeater_compare,must_out_compare,limit_att)){
+            cout << "NO" << endl;
+            return 0;
+          }
         }
+        cout << "YES" << endl;
       }
-      cout << "YES" << endl;
+    }else{
+      // copy lab
+      // limit stays the same for all calls
+      taas::Labeling lab_copy = taas::Labeling(lab);
+      if(!is_acceptable_alt(af,lab_copy,argument,limit,idfs))
+        cout << "NO" << endl;
+      else{
+        for(int a: af.get_attackers(argument)){
+          lab_copy = taas::Labeling(lab);
+          if(is_acceptable_alt(af,lab_copy,a,limit,idfs)){
+            cout << "NO" << endl;
+            return 0;
+          }
+        }
+        cout << "YES" << endl;
+      }
     }
   }
   return 0;
@@ -377,7 +493,7 @@ int solve(taas::Problem problem, map<string,string>& params, taas::Af& af, taas:
 int main(int argc, char *argv[]){
   // only taas::Problem::DC_CO,taas::Problem::DC_PR are supported by the non-approximate version
   taas::Solver solver(
-    "taas-fargo v1.1.3 (2024-01-25)\nMatthias Thimm (matthias.thimm@fernuni-hagen.de)",
+    "taas-fargo v1.2.1 (2024-02-27)\nMatthias Thimm (matthias.thimm@fernuni-hagen.de)",
     {taas::Problem::DC_CO,taas::Problem::DC_PR,taas::Problem::DC_ST,taas::Problem::DC_SST,taas::Problem::DC_STG,taas::Problem::DC_ID,taas::Problem::DS_CO,taas::Problem::DS_PR,taas::Problem::DS_ST,taas::Problem::DS_SST,taas::Problem::DS_STG,taas::Problem::DS_ID,taas::Problem::DS_GR,taas::Problem::DC_GR,taas::Problem::SE_GR,taas::Problem::EE_GR,taas::Problem::SE_CO},
     solve);
   return solver.execute(argc,argv);
