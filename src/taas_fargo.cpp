@@ -338,7 +338,8 @@ int is_acceptable_alt(taas::Af& af, taas::Labeling& lab, int argument,int limit,
     return is_acceptable_alt(af,lab,argument,limit) <= 0 ? 0 : 1;
   else{
     // if we are not doing approximate reasoning, set limit to number of arguments
-    limit = af.get_number_of_arguments();
+    if(limit == -1)
+      limit = af.get_number_of_arguments();
     for(int limit_actual = 0; limit_actual <= limit; limit_actual++){
       int val = is_acceptable_alt(af,lab,argument,limit_actual);
       if(val == 1)
