@@ -265,6 +265,7 @@ namespace taas{
       string argument, attacker, attacked;
       while (getline(file, line)) {
         boost::algorithm::trim(line);
+        if (line.length() == 0) continue;
         if(line.rfind("p af", 0) == 0) {
           int num_arguments = std::stoi(line.substr(4,line.length()));
           for(int i = 1; i <= num_arguments; i++){
