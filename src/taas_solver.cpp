@@ -13,7 +13,6 @@
 #include "taas_problem.h"
 #include "taas_solver.h"
 #include "taas_labeling.h"
-#include <boost/algorithm/string/trim.hpp>
 
 #include <string>
 #include <iostream>
@@ -23,6 +22,20 @@
 #include <map>
 
 using namespace std;
+
+std::string trim(const std::string& str,
+                 const std::string& whitespace = " \t")
+{
+    const auto strBegin = str.find_first_not_of(whitespace);
+    if (strBegin == std::string::npos)
+        return ""; // no content
+
+    const auto strEnd = str.find_last_not_of(whitespace);
+    const auto strRange = strEnd - strBegin + 1;
+
+    return str.substr(strBegin, strRange);
+}
+
 /* ============================================================================================================== */
 namespace taas{
 /* ============================================================================================================== */
@@ -129,7 +142,7 @@ namespace taas{
     else if( file_format == "apx" )
       af = parse_apx(file);
     else af = parse_i23(file);
-    file.close();    
+    file.close();
     int arg_idx = -1;
     if(taas::is_decision_problem(problem))
       if(argument == ""){
@@ -238,16 +251,16 @@ namespace taas{
     string line;
     string argument, attacker, attacked;
     while (getline(file, line)) {
-      boost::algorithm::trim(line);
+      line = trim(line);
       if(line.rfind("arg", 0) == 0) {
         argument = line.substr(4,line.length()-6);
-        boost::algorithm::trim(argument);
+        argument = trim(argument);
         af.add_argument(argument);
       }else if(line.rfind("att", 0) == 0){
         attacker = line.substr(4,line.find(",",0)-4);
         attacked = line.substr(line.find(",",0)+1,line.length()-3-line.find(",",0));
-        boost::algorithm::trim(attacker);
-        boost::algorithm::trim(attacked);
+        attacker = trim(attacker);
+        attacked = trim(attacked);
         af.add_attack(attacker,attacked);
       }else {
         cerr << "Cannot parse line '" << line << "' in file, ignoring";
@@ -264,7 +277,7 @@ namespace taas{
       string line;
       string argument, attacker, attacked;
       while (getline(file, line)) {
-        boost::algorithm::trim(line);
+        line = trim(line);
         if (line.length() == 0) continue;
         if(line.rfind("p af", 0) == 0) {
           int num_arguments = std::stoi(line.substr(4,line.length()));
@@ -276,8 +289,8 @@ namespace taas{
         }else{
           attacker = line.substr(0,line.find(" ",0));
           attacked = line.substr(line.find(" ",0)+1,line.length());
-          boost::algorithm::trim(attacker);
-          boost::algorithm::trim(attacked);
+          attacker = trim(attacker);
+          attacked = trim(attacked);
           af.add_attack(attacker,attacked);
         }
       }

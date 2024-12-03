@@ -439,7 +439,7 @@ int solve(taas::Problem problem, map<string,string>& params, taas::Af& af, taas:
     // for credulous reasoning other than ID, check whether the argument is contained
     // in an admissible set
     if(mode == 0){
-      if(is_acceptable(af,lab,argument,defeater_compare,must_out_compare,limit))
+        if(is_acceptable(af,lab,argument,defeater_compare,must_out_compare,limit))
           cout << "YES" << endl;
         else
           cout << "NO" << endl;
@@ -494,7 +494,7 @@ int solve(taas::Problem problem, map<string,string>& params, taas::Af& af, taas:
 int main(int argc, char *argv[]){
   // only taas::Problem::DC_CO,taas::Problem::DC_PR are supported by the non-approximate version
   taas::Solver solver(
-    "taas-fargo v2.2.1 (2024-04-12)\nMatthias Thimm (matthias.thimm@fernuni-hagen.de)",
+    "taas-fargo v2.2.2 (2024-12-03)\nMatthias Thimm (matthias.thimm@fernuni-hagen.de)",
     {taas::Problem::DC_CO,taas::Problem::DC_PR,taas::Problem::DC_ST,taas::Problem::DC_SST,taas::Problem::DC_STG,taas::Problem::DC_ID,taas::Problem::DS_CO,taas::Problem::DS_PR,taas::Problem::DS_ST,taas::Problem::DS_SST,taas::Problem::DS_STG,taas::Problem::DS_ID,taas::Problem::DS_GR,taas::Problem::DC_GR,taas::Problem::SE_GR,taas::Problem::EE_GR,taas::Problem::SE_CO},
     solve);
   return solver.execute(argc,argv);
