@@ -52,13 +52,13 @@ case "$PROBLEM" in
         # DS-ST taas-fargo-mode1-0-1
         MODE=1
         IDEEP=0
-        LIMIT=2
+        LIMIT=1
         ;;
     DS-SST)
         # DS-SST taas-fargo-mode1-0-1
         MODE=1
         IDEEP=0
-        LIMIT=2
+        LIMIT=1
         ;;
 esac
 $(dirname "$0")/taas-fargo -mode "$MODE" -idfs "$IDEEP" -limit "$LIMIT" -p "$PROBLEM" "${ADDITIONAL_ARGS[@]}"
